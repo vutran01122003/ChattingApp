@@ -1,9 +1,9 @@
 
 import { useDispatch, useSelector } from 'react-redux';
 import { countryCodeSelector, countSelector, productSelector, selectedCountrySelector } from '../redux/selector';
-import { increase, decrease } from '../redux/slices/countSlice';
 import { fetchData } from '../redux/slices/productSlice';
 import React, { useState, useEffect } from 'react';
+import {useIsFocused} from "@react-navigation/native"
 import Icon from "react-native-vector-icons/AntDesign"
 import {
     View,
@@ -12,7 +12,7 @@ import {
     TouchableOpacity,
     SafeAreaView,
     StatusBar,
-    Image,
+    Modal,
 } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 
@@ -22,12 +22,18 @@ function SignUpScreen({ navigation }) {
     const [termsChecked, setTermsChecked] = useState(false);
     const [socialTermsChecked, setSocialTermsChecked] = useState(false);
     const [isPhoneValid, setIsPhoneValid] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const selectedCountry = useSelector(selectedCountrySelector);
-
+    const isFocus = useIsFocused();
 
     useEffect(() => {
         dispatch(fetchData());
     }, []);
+    useEffect(()=>{
+        if(isFocus)
+        setIsModalVisible(false)
+        setPhoneNumber("")
+    }, [isFocus])
     const openCountryCodeScreen = () => {
         navigation.navigate('CountryCodeScreen', {
             countryCode: selectedCountry
@@ -36,23 +42,25 @@ function SignUpScreen({ navigation }) {
     const handleCheckPhone = (text) => {
         const phoneRegex = /^[0-9]{10}$/;
         setPhoneNumber(text);
-        console.log(text)
         if (phoneRegex.test(text)) setIsPhoneValid(true);
         else setIsPhoneValid(false);
     }
+    const handleContinue = () => {
+        setIsModalVisible(true);
+      };
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white mt-6">
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
             <View className="px-6 pt-4 flex-1">
-                {/* Title */}
+
                 <Text className="text-2xl font-bold text-gray-800 text-center mb-8">
                     Nhập số điện thoại
                 </Text>
 
-                {/* Phone input field */}
+
                 <View className="border border-blue-200 rounded-lg mb-6 flex-row overflow-hidden">
-                    {/* Country code selector */}
+
                     <TouchableOpacity className="flex-row items-center px-4 py-3" onPress={openCountryCodeScreen}>
                         <Text className="text-gray-800 font-medium">{selectedCountry.code}</Text>
                         <View className="ml-1">
@@ -60,10 +68,8 @@ function SignUpScreen({ navigation }) {
                         </View>
                     </TouchableOpacity>
 
-                    {/* Vertical separator */}
-                    <View className="w-px bg-blue-200 h-full" />
 
-                    {/* Phone number input */}
+                    <View className="w-px bg-blue-200 h-full" />
                     <TextInput
                         className="flex-1 px-4 py-3 text-base"
                         placeholder=""
@@ -73,7 +79,6 @@ function SignUpScreen({ navigation }) {
                     />
                 </View>
 
-                {/* Terms checkboxes */}
                 <View className="mb-3 flex-row items-center">
                     <Checkbox
                         status={termsChecked ? 'checked' : 'unchecked'}
@@ -98,19 +103,50 @@ function SignUpScreen({ navigation }) {
                     </Text>
                 </View>
 
-                {/* Continue button */}
                 <TouchableOpacity
                     className={`rounded-2xl py-4 items-center ${termsChecked && socialTermsChecked
                         && isPhoneValid ? 'bg-blue-500' : 'bg-gray-300'
                         }`}
                     disabled={!termsChecked || !socialTermsChecked}
+                    onPress={handleContinue}
                 >
                     <Text className={`font-medium ${termsChecked && socialTermsChecked && isPhoneValid ? 'text-white' :
                         'text-gray-500'} `}>Tiếp tục</Text>
                 </TouchableOpacity>
+                <Modal
+                    transparent
+                    animationType="fade"
+                    visible={isModalVisible}
+                    onRequestClose={() => setIsModalVisible(false)}
+                >
+                    <View className="flex-1 justify-center items-center bg-black/50">
+                        <View className="bg-white w-80 p-6 rounded-lg shadow-lg">
+                            <Text className="text-lg font-medium text-gray-800 mb-1">
+                                Nhận mã xác thực qua số
+                            </Text>
+                            <Text className="text-lg font-semibold text-gray-900">{phoneNumber} ?</Text>
+                            <Text className="text-gray-600 text-sm mt-2">
+                                Zalo sẽ gửi mã xác thực cho bạn qua số điện thoại này
+                            </Text>
+
+                            <TouchableOpacity
+                                className="bg-blue-500 py-3 rounded-lg mt-4"
+                                onPress={() => navigation.navigate("OtpVerificationScreen",{phoneNumber})}
+                            >
+                                <Text className="text-center text-white text-lg font-semibold">Tiếp tục</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                className="mt-3"
+                                onPress={() => setIsModalVisible(false)}
+                            >
+                                <Text className="text-center text-black font-semibold">Đổi số khác</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
 
-            {/* Footer */}
             <View className="py-6 items-center">
                 <View className='flex-row items-center'>
                     <Text className="text-gray-700 ">

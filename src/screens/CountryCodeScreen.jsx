@@ -31,8 +31,9 @@ const CountryCodeScreen = ({ navigation, route }) => {
             setFilteredCountries(countries);
         } else {
             const filtered = countries.filter(country =>
-                country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                country.code.includes(searchQuery)
+                country.name.toLowerCase() === searchQuery.toLocaleLowerCase() ||
+                country.code.includes(searchQuery) ||
+                country.name.toLowerCase().indexOf(searchQuery.toLowerCase().charAt(0)) === 0
             );
             setFilteredCountries(filtered);
         }
@@ -69,7 +70,7 @@ const CountryCodeScreen = ({ navigation, route }) => {
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white mt-6">
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
             {/* Header */}
