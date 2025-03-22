@@ -20,7 +20,7 @@ function HomeScreen({navigation}) {
 
   useEffect(() => {
     dispatch(fetchData());
-  }, []);
+  }, [dispatch]);
 
   return (
     <View className="gap-5">
@@ -39,6 +39,16 @@ function HomeScreen({navigation}) {
       <TouchableOpacity
         onPress={() => navigation.navigate('Profile', {name: 'Jane'})}>
         <Text className="text-red-600">Go to Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Chat', {name: 'haha'})}>
+        <Text className="text-red-600">Go to Chat Screen</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text className="text-red-600">Go to Register Screen</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Personal')}>
+        <Text className="text-red-600">Go to Personal Page</Text>
       </TouchableOpacity>
 
       <View>

@@ -5,6 +5,9 @@ import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import {AppProvider} from './redux/store';
 import './global.css';
+import ChatScreen from './screens/ChatScreen';
+import RegisterScreen from './screens/Register';
+import PersonalPage from './screens/PersonalPage';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +20,27 @@ function App() {
             name="Home"
             component={HomeScreen}
             options={{title: 'Welcome'}}
+          />
+          <Stack.Screen
+            name="Chat"
+            component={ChatScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Personal"
+            component={PersonalPage}
+            options={{
+              headerShown: false,
+            }}
           />
           <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
