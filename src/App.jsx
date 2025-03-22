@@ -17,18 +17,29 @@ function App() {
   return (
     <AppProvider>
       <NavigationContainer>
-        <Stack.Navigator>
-         <Stack.Screen
+        <Stack.Navigator screenOptions={{header: () => <></>}}>
+          <Stack.Screen
             name="Home"
             component={WelcomeScreen}
             options={{title: 'Welcome'}}
           />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} options={{headerShown: false}} />
-          <Stack.Screen name="CountryCodeScreen" component={CountryCodeScreen} options={{ headerShown: false }}/>
-          <Stack.Screen name="OtpVerificationScreen" component={OtpVerificationScreen} options={{ title: "" }}/>
-          <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen
+            name="SignUp"
+            component={SignUpScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="CountryCodeScreen"
+            component={CountryCodeScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="OtpVerificationScreen"
+            component={OtpVerificationScreen}
+            options={{title: ''}}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>
