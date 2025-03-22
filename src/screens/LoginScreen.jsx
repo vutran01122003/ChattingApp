@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({navigation}) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -10,12 +19,13 @@ const LoginScreen = ({ navigation }) => {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.innerContainer}>
-        <Text style={styles.title}>Vui lòng nhập số điện thoại và mật khẩu để đăng nhập</Text>
+        <Text style={styles.title}>
+          Vui lòng nhập số điện thoại và mật khẩu để đăng nhập
+        </Text>
 
         {/* Ô nhập số điện thoại */}
         <View style={styles.inputContainer}>
@@ -28,8 +38,8 @@ const LoginScreen = ({ navigation }) => {
               styles.input,
               isPhoneFocused ? styles.inputFocused : styles.inputDefault,
             ]}
-            onFocus={() => setIsPhoneFocused(true)} 
-            onBlur={() => setIsPhoneFocused(false)} 
+            onFocus={() => setIsPhoneFocused(true)}
+            onBlur={() => setIsPhoneFocused(false)}
           />
           {/* Nếu có giá trị trong ô nhập, hiển thị nút "X" để xóa */}
           {phone.length > 0 && (
@@ -50,11 +60,13 @@ const LoginScreen = ({ navigation }) => {
               styles.input,
               isPasswordFocused ? styles.inputFocused : styles.inputDefault,
             ]}
-            onFocus={() => setIsPasswordFocused(true)} 
-            onBlur={() => setIsPasswordFocused(false)} 
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Text style={styles.showPasswordText}>{showPassword ? 'Ẩn' : 'Hiện'}</Text>
+            <Text style={styles.showPasswordText}>
+              {showPassword ? 'Ẩn' : 'Hiện'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -65,7 +77,7 @@ const LoginScreen = ({ navigation }) => {
 
         {/* Nút Đăng nhập */}
         <TouchableOpacity style={styles.loginButton}>
-          <Text style={{color: 'white', fontSize: 24}}>{'>'}</Text>
+          <Text style={{color: 'white', fontSize: 20}}>Đăng nhập</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -104,6 +116,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingLeft: 10,
     fontSize: 16,
+    marginTop: 5,
   },
   inputDefault: {
     borderBottomColor: '#ccc',
@@ -130,7 +143,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   loginButton: {
-    width: 60,
+    width: 220,
     height: 60,
     backgroundColor: '#007BFF',
     alignItems: 'center',
