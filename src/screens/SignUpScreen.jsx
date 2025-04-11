@@ -1,7 +1,7 @@
 
 import { useDispatch, useSelector } from 'react-redux';
-import { countryCodeSelector, countSelector, productSelector, selectedCountrySelector } from '../redux/selector';
-import { fetchData } from '../redux/slices/productSlice';
+import { countryCodeSelector, selectedCountrySelector } from '../redux/selector';
+import { signUp } from '../redux/slices/authSlice'; 
 import React, { useState, useEffect } from 'react';
 import {useIsFocused} from "@react-navigation/native"
 import Icon from "react-native-vector-icons/AntDesign"
@@ -26,9 +26,6 @@ function SignUpScreen({ navigation }) {
     const selectedCountry = useSelector(selectedCountrySelector);
     const isFocus = useIsFocused();
 
-    useEffect(() => {
-        dispatch(fetchData());
-    }, []);
     useEffect(()=>{
         if(isFocus)
         setIsModalVisible(false)
@@ -48,6 +45,18 @@ function SignUpScreen({ navigation }) {
     const handleContinue = () => {
         setIsModalVisible(true);
       };
+    const handleButtonContinue = async () =>{
+        try {
+            const resultAction = await dispatch(signUp({ phone: phoneNumber })).unwrap();
+            console.log("Sign up result:", resultAction);
+            if (resultAction) {
+                navigation.navigate("OtpVerificationScreen", { phoneNumber });
+            }
+        } catch (error) {
+            console.error("Sign up failed:", error);
+            Alert.alert("Lỗi đăng ký", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+        }
+    }
     return (
         <SafeAreaView className="flex-1 bg-white mt-6">
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -131,7 +140,7 @@ function SignUpScreen({ navigation }) {
 
                             <TouchableOpacity
                                 className="bg-blue-500 py-3 rounded-lg mt-4"
-                                onPress={() => navigation.navigate("OtpVerificationScreen",{phoneNumber})}
+                                onPress={() => handleButtonContinue()}
                             >
                                 <Text className="text-center text-white text-lg font-semibold">Tiếp tục</Text>
                             </TouchableOpacity>
@@ -152,7 +161,7 @@ function SignUpScreen({ navigation }) {
                     <Text className="text-gray-700 ">
                         Bạn đã có tài khoản?{' '}
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
                         <Text className="text-blue-500 font-medium">Đăng nhập ngay</Text>
                     </TouchableOpacity>
                 </View>

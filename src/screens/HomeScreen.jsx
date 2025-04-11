@@ -1,9 +1,12 @@
-import {Text, TouchableOpacity, View} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {countSelector, productSelector} from '../redux/selector';
-import {increase, decrease} from '../redux/slices/countSlice';
-import {fetchData} from '../redux/slices/productSlice';
-import {useEffect} from 'react';
+import { Text, TouchableOpacity, View, SafeAreaView, StatusBar } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { countSelector, productSelector } from '../redux/selector';
+import { increase, decrease } from '../redux/slices/countSlice';
+import { fetchData } from '../redux/slices/productSlice';
+import { useEffect } from 'react';
+import { getUserInfo } from '../redux/slices/userSlice';
+import { logOut } from '../redux/slices/authSlice';
 
 function HomeScreen({navigation}) {
   const dispatch = useDispatch();
@@ -17,13 +20,14 @@ function HomeScreen({navigation}) {
   const decreaseValue = () => {
     dispatch(decrease());
   };
-
+  
   useEffect(() => {
     dispatch(fetchData());
   }, []);
 
   return (
-    <View className="gap-5">
+    <SafeAreaView className="p-5">
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View className="flex-row gap-2">
         <TouchableOpacity onPress={decreaseValue}>
           <Text>-</Text>
@@ -37,7 +41,7 @@ function HomeScreen({navigation}) {
       </View>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('Profile', {name: 'Jane'})}>
+        onPress={() => navigation.navigate('Profile', { name: 'Jane' })}>
         <Text className="text-red-600">Go to Profile</Text>
       </TouchableOpacity>
 
@@ -47,7 +51,10 @@ function HomeScreen({navigation}) {
           <Text key={index}>{item.title}</Text>
         ))}
       </View>
-    </View>
+      <TouchableOpacity>
+        <Text className="text-red-600">Logout</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 

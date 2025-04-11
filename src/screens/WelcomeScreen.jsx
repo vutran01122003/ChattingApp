@@ -26,7 +26,9 @@ const WelcomeScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* Nút Đăng Ký */}
-      <TouchableOpacity style={styles.registerButton}>
+      <TouchableOpacity style={styles.registerButton}
+        onPress={() => navigation.navigate('SignUp')}
+      >
         <Text style={styles.registerText}>ĐĂNG KÝ</Text>
       </TouchableOpacity>
     </View>

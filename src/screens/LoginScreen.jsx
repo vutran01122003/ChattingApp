@@ -1,17 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { logIn } from '../redux/slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const handleLogin = async () => {
+    if (!phone || !password) {
+      Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ số điện thoại và mật khẩu');
+      return;
+    }
 
+    try {
+      const result = await dispatch(logIn({ phone, password }));
+      console.log('Login result:', result);
+      if (result.meta.requestStatus === 'fulfilled') {
+        Alert.alert('Đăng nhập thành công');
+        const { tokens, user } = result.payload;
+        const { accessToken, refreshToken } = tokens;
+        await AsyncStorage.setItem('access_token', accessToken);
+        await AsyncStorage.setItem('refresh_token', refreshToken);
+        await AsyncStorage.setItem('client_id', user._id);
+        navigation.navigate('AuthLoading');
+      } else {
+        Alert.alert('Đăng nhập thất bại', result.payload?.message || 'Sai thông tin đăng nhập');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Lỗi', 'Đã xảy ra lỗi khi đăng nhập');
+    }
+  };
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.innerContainer}>
@@ -28,8 +55,8 @@ const LoginScreen = ({ navigation }) => {
               styles.input,
               isPhoneFocused ? styles.inputFocused : styles.inputDefault,
             ]}
-            onFocus={() => setIsPhoneFocused(true)} 
-            onBlur={() => setIsPhoneFocused(false)} 
+            onFocus={() => setIsPhoneFocused(true)}
+            onBlur={() => setIsPhoneFocused(false)}
           />
           {/* Nếu có giá trị trong ô nhập, hiển thị nút "X" để xóa */}
           {phone.length > 0 && (
@@ -50,8 +77,8 @@ const LoginScreen = ({ navigation }) => {
               styles.input,
               isPasswordFocused ? styles.inputFocused : styles.inputDefault,
             ]}
-            onFocus={() => setIsPasswordFocused(true)} 
-            onBlur={() => setIsPasswordFocused(false)} 
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Text style={styles.showPasswordText}>{showPassword ? 'Ẩn' : 'Hiện'}</Text>
@@ -59,13 +86,15 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         {/* Nút "Lấy lại mật khẩu" */}
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity style={styles.forgotPassword}
+          onPress={() => navigation.navigate('PasswordRecovery')}
+        >
           <Text style={styles.forgotPasswordText}>Lấy lại mật khẩu</Text>
         </TouchableOpacity>
 
         {/* Nút Đăng nhập */}
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={{color: 'white', fontSize: 24}}>{'>'}</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={{ color: 'white', fontSize: 24 }}>Đăng nhập</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -130,12 +159,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   loginButton: {
-    width: 60,
+    width: 150,
     height: 60,
     backgroundColor: '#007BFF',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 30,
+    fontWeight: '500',
   },
 });
 
