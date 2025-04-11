@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -10,15 +10,19 @@ import AccountSecurityScreen from './AccountSecurityScreen';
 import PersonalDetailScreen from './PersonalDetailScreen';
 import EditProfileScreen from './EditProfileScreen';
 import CreatePasswordNotLogoutScreen from './CreatePasswordNotLogout';
+import { useNavigation } from '@react-navigation/native';
 import ChangePasswordScreen from './ChangePasswordScreen';
+import { Scanner } from './CameraScanner';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+
 const CustomHeader = ({ route }) => {
     const isProfileScreen = route?.name === 'Me';
+    const navigation = useNavigation();
     return (
-        <SafeAreaView className="flex-row items-center bg-blue-500 px-4 py-2 mt-8">
+        <SafeAreaView className="flex-row items-center bg-blue-500 px-4 py-2">
             <View className="flex-row items-center bg-blue-400 flex-1 rounded-md px-2 py-1">
                 <Ionicons name="search" size={20} color="#ffffff" />
                 <Text className="text-white ml-2">Tìm kiếm</Text>
@@ -30,7 +34,9 @@ const CustomHeader = ({ route }) => {
                     </TouchableOpacity>
                 ) : (
                     <>
-                        <TouchableOpacity className="ml-3">
+                        <TouchableOpacity className="ml-3"
+                            onPress={() => navigation.navigate('QRScanner')}
+                        >
                             <Icon name="qrcode-scan" size={24} color="#ffffff" />
                         </TouchableOpacity>
                         <TouchableOpacity className="ml-3">
@@ -100,39 +106,44 @@ const MainTabNavigator = () => {
 }
 const MainAppStack = () => {
     return (
-      <Stack.Navigator>
-        <Stack.Screen 
-          name="MainTabs" 
-          component={MainTabNavigator} 
-          options={{headerShown: false}} 
-        />
-        <Stack.Screen 
-          name="AccountSecurity" 
-          component={AccountSecurityScreen} 
-          options={{headerShown: false}} 
-        />
-        <Stack.Screen 
-          name="PersonalDetail" 
-          component={PersonalDetailScreen} 
-          options={{headerShown: false}}
-        />
-        <Stack.Screen 
-          name="EditProfile" 
-          component={EditProfileScreen} 
-          options={{headerShown: false}}
-        />
-        <Stack.Screen 
-          name="CreatePasswordNotLogout" 
-          component={CreatePasswordNotLogoutScreen} 
-          options={{headerShown: false}}
-        />
-        <Stack.Screen 
-          name="ChangePassword" 
-          component={ChangePasswordScreen} 
-          options={{headerShown: false}}
-        />
-      </Stack.Navigator>
+        <Stack.Navigator>
+            <Stack.Screen
+                name="MainTabs"
+                component={MainTabNavigator}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="AccountSecurity"
+                component={AccountSecurityScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="PersonalDetail"
+                component={PersonalDetailScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="CreatePasswordNotLogout"
+                component={CreatePasswordNotLogoutScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="QRScanner"
+                component={Scanner}
+                options={{ headerShown: false }}
+            />
+        </Stack.Navigator>
     );
-  };
+};
 
 export default MainAppStack;

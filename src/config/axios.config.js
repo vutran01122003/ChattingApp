@@ -1,11 +1,10 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import dotenv from 'dotenv'
 
-dotenv.config();
-const IP_LOCAL = process.env.IP_LOCAL
+
+
 const instance = axios.create({
-  baseURL: `http://${IP_LOCAL}:3055/v1/api`,
+  baseURL: `http://192.168.121.223:3055/v1/api`,
   headers: {
     'Content-Type': 'application/json',
   },
