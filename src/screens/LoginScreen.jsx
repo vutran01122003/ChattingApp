@@ -71,7 +71,9 @@ const LoginScreen = ({navigation}) => {
         </View>
 
         {/* Nút "Lấy lại mật khẩu" */}
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity
+          style={styles.forgotPassword}
+          onPress={() => navigation.navigate('ForgotPassword')}>
           <Text style={styles.forgotPasswordText}>Lấy lại mật khẩu</Text>
         </TouchableOpacity>
 

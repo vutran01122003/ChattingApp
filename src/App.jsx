@@ -10,6 +10,9 @@ import LoginScreen from './screens/LoginScreen';
 import './global.css';
 import SignUpScreen from './screens/SignUpScreen';
 import OtpVerificationScreen from './screens/OtpVerificationScreen';
+import ForgotPassword from './screens/ForgotPasswordScreen';
+import OTPVerificationForgotPassword from './screens/OTPVerificationForgotPassword';
+import CreateNewPassword from './screens/CreateNewPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,7 +27,10 @@ function App() {
             options={{title: 'Welcome'}}
           />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="OTPVerificationForgotPassword" component={OTPVerificationForgotPassword} />
+          <Stack.Screen name="CreateNewPassword" component={CreateNewPassword} />
           <Stack.Screen
             name="SignUp"
             component={SignUpScreen}
