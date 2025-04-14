@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View, SafeAreaView, StatusBar } from 'react-native';
+import { Text, TouchableOpacity, View, SafeAreaView, StatusBar, FlatList, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { countSelector, productSelector } from '../redux/selector';
@@ -25,36 +25,33 @@ function HomeScreen({navigation}) {
     dispatch(fetchData());
   }, []);
 
+  const groups = [
+    { id: '1', name: 'Gia đình', avatar: 'https://via.placeholder.com/50', members: 5 },
+    { id: '2', name: 'Nhóm làm việc', avatar: 'https://via.placeholder.com/50', members: 12 },
+    // Thêm các nhóm khác
+  ];
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity className="flex-row items-center p-3 border-b border-gray-200">
+      <Image 
+        source={{ uri: item.avatar }} 
+        className="w-12 h-12 rounded-full" 
+      />
+      <View className="ml-4">
+        <Text className="text-base">{item.name}</Text>
+        <Text className="text-gray-500 text-sm">{item.members} thành viên</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
-    <SafeAreaView className="p-5">
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View className="flex-row gap-2">
-        <TouchableOpacity onPress={decreaseValue}>
-          <Text>-</Text>
-        </TouchableOpacity>
-
-        <Text>{count.value}</Text>
-
-        <TouchableOpacity onPress={increaseValue}>
-          <Text>+</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Profile', { name: 'Jane' })}>
-        <Text className="text-red-600">Go to Profile</Text>
-      </TouchableOpacity>
-
-      <View>
-        <Text className="font-semibold">Test Fetch Data:</Text>
-        {product.data.map((item, index) => (
-          <Text key={index}>{item.title}</Text>
-        ))}
-      </View>
-      <TouchableOpacity>
-        <Text className="text-red-600">Logout</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+    <View className="flex-1 bg-white">
+      <FlatList
+        data={groups}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+      />
+    </View>
   );
 }
 

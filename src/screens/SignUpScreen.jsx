@@ -13,6 +13,7 @@ import {
     SafeAreaView,
     StatusBar,
     Modal,
+    Alert
 } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import {useIsFocused} from "@react-navigation/native"
+import { useIsFocused } from "@react-navigation/native"
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAweSome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -27,15 +27,17 @@ function ProfileScreen({ navigation, route }) {
         console.log('User info:', user);
         if (!user.is_has_password) {
           navigation.navigate('CreatePassword');
+        } else {
+          const reuslt = await dispatch(logOut());
+          console.log('Logout result:', reuslt);
+          if (reuslt.meta.requestStatus === 'fulfilled') {
+            await AsyncStorage.removeItem('access_token');
+            await AsyncStorage.removeItem('client_id');
+            await AsyncStorage.removeItem('refresh_token');
+            navigation.replace('Home');
+          }
         }
-        const reuslt = await dispatch(logOut());
-        console.log('Logout result:', reuslt);
-        if (reuslt.meta.requestStatus === 'fulfilled') {
-          await AsyncStorage.removeItem('access_token');
-          await AsyncStorage.removeItem('client_id');
-          await AsyncStorage.removeItem('refresh_token');
-          navigation.replace('Home');
-        }
+
       } else {
         Alert.alert('Failed to fetch user info');
       }
@@ -45,7 +47,7 @@ function ProfileScreen({ navigation, route }) {
     }
   }
   React.useEffect(() => {
-    if(isFocus){
+    if (isFocus) {
       getUserLogin();
     }
   }, [isFocus])

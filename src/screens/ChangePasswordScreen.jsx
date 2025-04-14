@@ -81,11 +81,16 @@ const ChangePasswordScreen = ({ navigation, route }) => {
 
             if (result.data.metadata) {
                 Alert.alert('Thành công', 'Cập nhật mật khẩu thành công!');
+                await AsyncStorage.clear();
+                await AsyncStorage.setItem('client_id', result.data.metadata.user._id);
+                await AsyncStorage.setItem('access_token', result.data.metadata.tokens.accessToken);
+                await AsyncStorage.setItem('refresh_token', result.data.metadata.tokens.refreshToken);
                 navigation.navigate('MainTabs');
             }
         } catch (error) {
             console.error('Error updating password:', error);
             Alert.alert('Lỗi', 'Đã xảy ra lỗi khi cập nhật mật khẩu');
+            return;
         }
     };
 

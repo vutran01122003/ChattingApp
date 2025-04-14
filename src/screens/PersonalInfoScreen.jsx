@@ -38,7 +38,7 @@ const PersonalInfoScreen = ({ route, navigation }) => {
             const res = await dispatch(updateUserInfo(payload)).unwrap();
             if(res.modifiedCount > 0){
                 Alert.alert("Cập nhật thông tin thành công", "Thông tin cá nhân của bạn đã được cập nhật thành công.");
-                navigation.navigate("HomeScreen");
+                navigation.navigate("MainApp");
             }
             
             // TODO: Điều hướng sang màn hình khác nếu cần
