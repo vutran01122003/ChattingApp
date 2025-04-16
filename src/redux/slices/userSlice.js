@@ -107,6 +107,45 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+
+// ------------------- Get All User -------------------
+export const getAllUser = createAsyncThunk(
+  'user/getAllUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const clientId = await AsyncStorage.getItem('client_id');
+      const res = await axios.get('/user/getAllUser', {
+        headers: { 'x-client-id': clientId }
+      });
+      return res.data.metadata; 
+    } catch (err) {
+      return rejectWithValue(err.message || 'Get all users failed');
+    }
+  }
+);
+
+
+// ------------------- Get User By Search -------------------
+export const getUserBySearch = createAsyncThunk(
+  'user/getUserBySearch',
+  async (searchTerm, { rejectWithValue }) => {
+    try {
+      const clientId = await AsyncStorage.getItem('client_id');
+      const res = await axios.get(`/user/getUserBySearch/${searchTerm}`, {
+        headers: { 'x-client-id': clientId }
+      });
+      return res.data.metadata; 
+    } catch (err) {
+      return rejectWithValue(err.message || 'Search users failed');
+    }
+  }
+);
+
+
+
+
+
+
 const userSlice = createSlice({
   name: 'user',
   initialState: {
@@ -114,7 +153,9 @@ const userSlice = createSlice({
     otpToken: null,
     user: null,
     loading: false,
-    error: null
+    error: null,
+    allUser:[],
+    searchResults: [],
   },
   reducers: {
     logout: (state) => {
@@ -154,7 +195,14 @@ const userSlice = createSlice({
       .addCase(createPassword.fulfilled, (state) => {
         state.error = null;
       })
-
+      .addCase(getAllUser.fulfilled, (state, action) => {
+        state.allUsers = action.payload;
+        state.error = null;
+      })
+      .addCase(getUserBySearch.fulfilled, (state, action) => {
+        state.searchResults = action.payload; 
+        state.error = null;
+      })
 
       .addMatcher((action) => action.type.endsWith('rejected'), (state, action) => {
         state.loading = false;
