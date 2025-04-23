@@ -1,10 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
 const instance = axios.create({
-  baseURL: `http://192.168.121.223:3055/v1/api`,
+  baseURL: `http://${process.env.API_URL}:3055/v1/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,14 +22,21 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-
 instance.interceptors.request.use(
   async function (config) {
-    const publicEndpoints = ['/auth/login', '/auth/register', '/auth/verify-otp', 
-      '/user/request-reset-password', '/user/verify-reset-password', '/user/reset-password'];
-    const isPublicRequest = publicEndpoints.some(endpoint => config.url.includes(endpoint));
-    
-    if (!isPublicRequest) { 
+    const publicEndpoints = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/verify-otp',
+      '/user/request-reset-password',
+      '/user/verify-reset-password',
+      '/user/reset-password',
+    ];
+    const isPublicRequest = publicEndpoints.some(endpoint =>
+      config.url.includes(endpoint),
+    );
+
+    if (!isPublicRequest) {
       const accessToken = await AsyncStorage.getItem('access_token');
       console.log('Access Token:', accessToken);
       if (accessToken) {
@@ -44,9 +49,8 @@ instance.interceptors.request.use(
   function (err) {
     console.log('Request Error:', err);
     return Promise.reject(err);
-  }
+  },
 );
-
 
 instance.interceptors.response.use(
   response => response,
@@ -58,7 +62,7 @@ instance.interceptors.response.use(
 
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
+          failedQueue.push({resolve, reject});
         })
           .then(token => {
             originalRequest.headers['authorization'] = token;
@@ -81,11 +85,12 @@ instance.interceptors.response.use(
               'x-client-id': clientId,
               'refresh-token': refreshToken,
             },
-          }
+          },
         );
 
         const newAccessToken = refreshResponse.data.metadata.tokens.accessToken;
-        const newRefreshToken = refreshResponse.data.metadata.tokens.refreshToken;
+        const newRefreshToken =
+          refreshResponse.data.metadata.tokens.refreshToken;
 
         await AsyncStorage.setItem('access_token', newAccessToken);
         await AsyncStorage.setItem('refresh_token', newRefreshToken);
@@ -102,7 +107,7 @@ instance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default instance;

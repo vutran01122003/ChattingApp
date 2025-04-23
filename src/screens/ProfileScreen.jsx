@@ -1,23 +1,29 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { useIsFocused } from "@react-navigation/native"
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {useIsFocused} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAweSome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { logOut } from '../redux/slices/authSlice';
-import { getUserInfo } from '../redux/slices/userSlice';
-function ProfileScreen({ navigation, route }) {
+import {logOut} from '../redux/slices/authSlice';
+import {getUserInfo, updateUserStatus} from '../redux/slices/userSlice';
+function ProfileScreen({navigation, route}) {
   const [user, setUser] = React.useState({});
   const dispatch = useDispatch();
   const isFocus = useIsFocused();
   const getUserLogin = async () => {
     const userLogin = await dispatch(getUserInfo()).unwrap();
     setUser(userLogin);
-  }
+  };
   const handleLogout = async () => {
     try {
       const resultAction = await dispatch(getUserInfo());
@@ -28,6 +34,7 @@ function ProfileScreen({ navigation, route }) {
         if (!user.is_has_password) {
           navigation.navigate('CreatePassword');
         } else {
+          await dispatch(updateUserStatus(false));
           const reuslt = await dispatch(logOut());
           console.log('Logout result:', reuslt);
           if (reuslt.meta.requestStatus === 'fulfilled') {
@@ -37,26 +44,23 @@ function ProfileScreen({ navigation, route }) {
             navigation.replace('Home');
           }
         }
-
       } else {
         Alert.alert('Failed to fetch user info');
       }
-
     } catch (error) {
       Alert.alert('Something went wrong', error.message || 'Unknown error');
     }
-  }
+  };
   React.useEffect(() => {
     if (isFocus) {
       getUserLogin();
     }
-  }, [isFocus])
+  }, [isFocus]);
   return (
     <ScrollView className="flex-1 bg-gray-100">
-
       <View className="bg-white p-4 mb-2 flex-row items-center">
         <Image
-          source={{ uri: user?.avatar_url || 'https://via.placeholder.com/150' }}
+          source={{uri: user?.avatar_url || 'https://via.placeholder.com/150'}}
           className="w-16 h-16 rounded-full"
         />
         <View className="ml-4">
@@ -73,7 +77,9 @@ function ProfileScreen({ navigation, route }) {
           </View>
           <View className="flex-1">
             <Text className="font-medium">zCloud</Text>
-            <Text className="text-gray-500 text-sm">Không gian lưu trữ dữ liệu trên đám mây</Text>
+            <Text className="text-gray-500 text-sm">
+              Không gian lưu trữ dữ liệu trên đám mây
+            </Text>
           </View>
           <Text className="text-gray-400">›</Text>
         </TouchableOpacity>
@@ -84,7 +90,9 @@ function ProfileScreen({ navigation, route }) {
           </View>
           <View className="flex-1">
             <Text className="font-medium">zStyle – Nổi bật trên Zalo</Text>
-            <Text className="text-gray-500 text-sm">Hình nền và nhạc cho cuộc gọi Zalo</Text>
+            <Text className="text-gray-500 text-sm">
+              Hình nền và nhạc cho cuộc gọi Zalo
+            </Text>
           </View>
         </TouchableOpacity>
 
@@ -94,7 +102,9 @@ function ProfileScreen({ navigation, route }) {
           </View>
           <View className="flex-1">
             <Text className="font-medium">Cloud của tôi</Text>
-            <Text className="text-gray-500 text-sm">Lưu trữ các tin nhắn quan trọng</Text>
+            <Text className="text-gray-500 text-sm">
+              Lưu trữ các tin nhắn quan trọng
+            </Text>
           </View>
           <Text className="text-gray-400">›</Text>
         </TouchableOpacity>
@@ -105,7 +115,9 @@ function ProfileScreen({ navigation, route }) {
           </View>
           <View className="flex-1">
             <Text className="font-medium">Dữ liệu trên máy</Text>
-            <Text className="text-gray-500 text-sm">Quản lý dữ liệu Zalo của bạn</Text>
+            <Text className="text-gray-500 text-sm">
+              Quản lý dữ liệu Zalo của bạn
+            </Text>
           </View>
           <Text className="text-gray-400">›</Text>
         </TouchableOpacity>
@@ -116,16 +128,18 @@ function ProfileScreen({ navigation, route }) {
           </View>
           <View className="flex-1">
             <Text className="font-medium">Ví QR</Text>
-            <Text className="text-gray-500 text-sm">Lưu trữ và xuất trình các mã QR quan trọng</Text>
+            <Text className="text-gray-500 text-sm">
+              Lưu trữ và xuất trình các mã QR quan trọng
+            </Text>
           </View>
         </TouchableOpacity>
       </View>
 
       {/* Account and Security */}
       <View className="bg-white mb-2">
-        <TouchableOpacity className="flex-row items-center p-4 border-b border-gray-100"
-          onPress={() => navigation.navigate('AccountSecurity', { user })}
-        >
+        <TouchableOpacity
+          className="flex-row items-center p-4 border-b border-gray-100"
+          onPress={() => navigation.navigate('AccountSecurity', {user})}>
           <View className="w-8 h-8 rounded-full items-center justify-center mr-3">
             <Entypo name="shield" size={20} color="#0084ff" />
           </View>
@@ -149,12 +163,10 @@ function ProfileScreen({ navigation, route }) {
       <View className="p-4">
         <TouchableOpacity
           className="bg-white p-4 items-center rounded-lg"
-          onPress={handleLogout}
-        >
+          onPress={handleLogout}>
           <Text className="text-red-500 font-bold">Đăng xuất</Text>
         </TouchableOpacity>
       </View>
-
     </ScrollView>
   );
 }
