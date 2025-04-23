@@ -15,6 +15,7 @@ import ChangePasswordScreen from './ChangePasswordScreen';
 import {Scanner} from './CameraScanner';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ContactScreen from './ContactScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -94,7 +95,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Contacts"
-        component={HomeScreen}
+        component={ContactScreen}
         options={{tabBarLabel: 'Danh bạ'}}
       />
       <Tab.Screen

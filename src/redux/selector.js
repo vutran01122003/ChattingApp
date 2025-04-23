@@ -5,3 +5,4 @@ export const selectedCountrySelector = state => state.countryCode.isSlected;
 export const otpTokenSelector = state => state.authentication.otpToken;
 export const tokenValidSelector = state => state.authentication.is_valid;
 export const userSelector = state => state.authentication.user;
+export const friendSelector = state => state.friend;

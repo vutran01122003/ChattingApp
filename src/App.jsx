@@ -19,6 +19,9 @@ import ChangePasswordScreen from './screens/ChangePasswordScreen';
 import PasswordRecoveryScreen from './screens/PasswordRecoveryScreen';
 import VerificationCodeScreen from './screens/VerificationRecoveryScreen';
 import SearchScreen from './screens/SearchScreen';
+import ChattingScreen from './screens/ChattingScreen';
+import ContactScreen from './screens/ContactScreen';
+import FriendRequestScreen from './screens/FriendRequsetScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +44,9 @@ function App() {
           <Stack.Screen name="PasswordRecovery" component={PasswordRecoveryScreen} options={{headerShown: false}} />
           <Stack.Screen name="VerificationCode" component={VerificationCodeScreen} options={{headerShown: false}} />
           <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true, title: 'Tìm kiếm' }} />
+          <Stack.Screen name="ChattingScreen" component={ChattingScreen} options={{headerShown: false}} />
+          <Stack.Screen name="ContactScreen" component={ContactScreen} options={{headerShown: false}} />
+          <Stack.Screen name="FriendRequestScreen" component={FriendRequestScreen} options={{headerShown: false}} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

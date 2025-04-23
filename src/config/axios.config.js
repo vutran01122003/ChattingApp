@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const instance = axios.create({
   // baseURL: `http://192.168.121.223:3055/v1/api`,
-  baseURL: `http://192.168.1.3:3055/v1/api`,
+  baseURL: `http://192.168.1.8:3055/v1/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,7 +31,7 @@ instance.interceptors.request.use(
     const publicEndpoints = ['/auth/login', '/auth/register', '/auth/verify-otp', 
       '/user/request-reset-password', '/user/verify-reset-password', '/user/reset-password','user/getAllUser'];
     const isPublicRequest = publicEndpoints.some(endpoint => config.url.includes(endpoint));
-    
+
     if (!isPublicRequest) { 
       const accessToken = await AsyncStorage.getItem('access_token');
       console.log('Access Token:', accessToken);

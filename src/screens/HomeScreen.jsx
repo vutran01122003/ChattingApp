@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, TouchableHighlight } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUser, getUserBySearch } from '../redux/slices/userSlice';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = ({ route }) => {
   const dispatch = useDispatch();
+  const navigation = useNavigation(); 
   const [searchTerm, setSearchTerm] = useState(route.params?.searchTerm || '');
 
-
+  
   const allUsers = useSelector(state => state.user.allUsers);
   const searchResults = useSelector(state => state.user.searchResults);
   const loading = useSelector(state => state.user.loading);
@@ -24,7 +26,9 @@ const HomeScreen = ({ route }) => {
   const renderItem = ({ item }) => (
     <TouchableHighlight
       underlayColor="#f0f0f0" 
-      onPress={() => {  }}
+      onPress={() => { 
+        navigation.navigate('ChattingScreen', { userId: item._id, userName: item.full_name, userAvatar: item.avatar_url });
+      }}
       style={{ borderBottomWidth: 1, borderBottomColor: '#e0e0e0' }} 
     >
       <View className="flex-row items-center px-4 py-3">

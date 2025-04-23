@@ -10,17 +10,24 @@ const SearchScreen = ({ route, navigation }) => {
   const loading = useSelector(state => state.user.loading);
   const error = useSelector(state => state.user.error);
 
-
   useEffect(() => {
     if (searchTerm) {
       dispatch(getUserBySearch(searchTerm));  
     }
   }, [dispatch, searchTerm]);
 
+  const handleUserPress = (user) => {
+    navigation.navigate('ChattingScreen', {
+      userId: user._id,
+      userName: user.full_name,
+      userAvatar: user.avatar_url,
+    });
+  };
+
   const renderItem = ({ item }) => (
     <TouchableHighlight
       underlayColor="#f0f0f0"  
-      onPress={() => {}}
+      onPress={() => handleUserPress(item)}  
       style={{ borderBottomWidth: 1, borderBottomColor: '#e0e0e0' }}  
     >
       <View className="flex-row items-center px-4 py-3">

@@ -5,12 +5,14 @@ import productSlice from './slices/productSlice';
 import countryCodeSlice from './slices/countryCodeSlice';
 import authSlice from './slices/authSlice';
 import userSlice from './slices/userSlice';
+import friendSlice from './slices/friendSlice';
 const rootReducer = combineReducers({
   count: countReducer,
   product: productSlice,
   countryCode: countryCodeSlice,
   authentication: authSlice,
-  user: userSlice
+  user: userSlice,
+  friend: friendSlice,
 });
 
 const store = configureStore({
