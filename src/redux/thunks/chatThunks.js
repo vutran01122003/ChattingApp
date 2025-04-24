@@ -2,8 +2,8 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from '../../config/axios.config';
 
-export const fetchConversations = createAsyncThunk(
-  'conversation/fetchConversations',
+export const fetchAllConversations = createAsyncThunk(
+  'conversation/fetchAllConversations',
   async (_, {rejectWithValue}) => {
     try {
       const clientId = await AsyncStorage.getItem('client_id');
@@ -19,16 +19,14 @@ export const fetchConversations = createAsyncThunk(
   },
 );
 
-export const createOrGetConversation = createAsyncThunk(
-  'conversation/createOrGetConversation',
-  async ({otherUserId}, {rejectWithValue}) => {
+export const getConversation = createAsyncThunk(
+  'conversation/getConversation',
+  async (conversationId, {rejectWithValue}) => {
     try {
       const clientId = await AsyncStorage.getItem('client_id');
-      const response = await axios.post(
-        '/conversations',
-        {otherUserId},
-        {headers: {'x-client-id': clientId}},
-      );
+      const response = await axios.get(`/conversations/${conversationId}`, {
+        headers: {'x-client-id': clientId},
+      });
       return response.data.metadata;
     } catch (err) {
       return rejectWithValue(

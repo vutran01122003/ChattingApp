@@ -10,7 +10,7 @@ import {
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
-  createOrGetConversation,
+  getConversation,
   getConversationMessages,
   sendMessage,
   markAsReadMessage,
@@ -36,7 +36,8 @@ const ChatMessageScreen = ({route}) => {
   const navigation = useNavigation();
   const isFocus = useIsFocused();
   const dispatch = useDispatch();
-  const {otherUserId} = route.params;
+  const {conversationId} = route.params;
+
   const currentConversation = useSelector(currentConversationSelector);
   const messagePagination = useSelector(messagePaginationSelector);
   const messages = useSelector(messagesSelector);
@@ -74,7 +75,7 @@ const ChatMessageScreen = ({route}) => {
 
   useEffect(() => {
     if (isFocus) {
-      dispatch(createOrGetConversation({otherUserId}));
+      dispatch(getConversation(conversationId));
       getUserLogin();
     }
 
@@ -243,8 +244,6 @@ const ChatMessageScreen = ({route}) => {
         includeBase64: true,
         selectionLimit: 3,
       });
-
-      console.log(result.assets);
 
       if (result.assets && result.assets.length > 0) {
         const formData = new FormData();

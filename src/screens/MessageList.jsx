@@ -17,7 +17,10 @@ const MessageList = ({
   currentConversation,
 }) => {
   const renderMessage = ({item}) => {
-    if (item.is_deleted && item.sender._id === currentUserId) {
+    if (
+      item.deleted_by.includes(currentUserId) &&
+      item.sender._id === currentUserId
+    ) {
       return (
         <View
           className={`flex-row items-end my-1 max-w-4/5 ${
@@ -28,7 +31,7 @@ const MessageList = ({
           <View
             className={`p-2 rounded-2xl ${
               item.sender._id === currentUserId
-                ? 'bg-blue-500 rounded-br-md mr-1'
+                ? 'bg-blue-200 rounded-br-md mr-1'
                 : 'bg-gray-200 rounded-bl-md ml-1'
             }`}>
             <Text className="text-gray-500 italic text-sm">

@@ -1,20 +1,20 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 import {
-  fetchConversations,
-  createOrGetConversation,
+  fetchAllConversations,
+  getConversation,
   getConversationMessages,
   sendMessage,
   sendMessageWithFiles,
   revokeMessage,
   deleteMessage,
-  markAsReadMessage,
   forwardMessage,
 } from '../thunks/chatThunks';
 
 const initialState = {
   friendConversations: [],
   strangerConversations: [],
+  groupConversations: [],
   currentConversation: null,
 
   messages: [],
@@ -89,7 +89,9 @@ const chatSlice = createSlice({
         state.strangerConversations,
       );
 
-      if (!updatedInFriends && !updatedInStrangers) {
+      const updatedInGroups = updateConversationList(state.groupConversations);
+
+      if (!updatedInFriends && !updatedInStrangers && !updatedInGroups) {
         console.log(
           'Conversation not found in local state, might need to fetch',
         );
@@ -111,12 +113,13 @@ const chatSlice = createSlice({
   },
   extraReducers: builder => {
     builder
-      .addCase(fetchConversations.fulfilled, (state, action) => {
+      .addCase(fetchAllConversations.fulfilled, (state, action) => {
         state.friendConversations = action.payload.friends;
         state.strangerConversations = action.payload.strangers;
+        state.groupConversations = action.payload.groups;
       })
 
-      .addCase(createOrGetConversation.fulfilled, (state, action) => {
+      .addCase(getConversation.fulfilled, (state, action) => {
         state.currentConversation = action.payload;
 
         const newConv = action.payload;
@@ -128,13 +131,21 @@ const chatSlice = createSlice({
           ) {
             state.friendConversations.unshift(newConv);
           }
-        } else {
+        } else if (newConv.conversation_type === 'stranger') {
           if (
             !state.strangerConversations.some(
               c => c.conversation_id === newConv.conversation_id,
             )
           ) {
             state.strangerConversations.unshift(newConv);
+          }
+        } else {
+          if (
+            !state.groupConversations.some(
+              c => c.conversation_id === newConv.conversation_id,
+            )
+          ) {
+            state.groupConversations.unshift(newConv);
           }
         }
       })
@@ -158,132 +169,17 @@ const chatSlice = createSlice({
 
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.messages.unshift(action.payload);
-
-        // if (state.currentConversation) {
-        //   state.currentConversation.last_message =
-        //     action.payload.content ||
-        //     action.payload.attachments[action.payload.attachments.length - 1]
-        //       .file_name;
-        //   state.currentConversation.last_message_time =
-        //     action.payload.createdAt;
-        // }
       })
 
       .addCase(sendMessageWithFiles.fulfilled, (state, action) => {
         state.messages.unshift(action.payload);
-
-        if (state.currentConversation) {
-          state.currentConversation.last_message = action.payload;
-          state.currentConversation.last_message_time =
-            action.payload.createdAt;
-        }
       })
 
-      .addCase(revokeMessage.fulfilled, (state, action) => {
-        const messageIndex = state.messages.findIndex(
-          msg => msg._id === action.payload._id,
-        );
+      .addCase(revokeMessage.fulfilled, (state, action) => {})
 
-        if (messageIndex !== -1) {
-          state.messages[messageIndex].is_revoked = true;
-        }
+      .addCase(deleteMessage.fulfilled, (state, action) => {})
 
-        if (
-          state.currentConversation?.last_message?._id === action.payload._id
-        ) {
-          const updateLastMessage = list => {
-            const index = list.findIndex(
-              c =>
-                c.conversation_id === state.currentConversation.conversation_id,
-            );
-
-            if (
-              index !== -1 &&
-              list[index].last_message?._id === action.payload._id
-            ) {
-              list[index].last_message.is_revoked = true;
-            }
-          };
-
-          updateLastMessage(state.friendConversations);
-          updateLastMessage(state.strangerConversations);
-        }
-      })
-
-      .addCase(deleteMessage.fulfilled, (state, action) => {
-        const messageIndex = state.messages.findIndex(
-          msg => msg._id === action.payload._id,
-        );
-
-        if (messageIndex !== -1) {
-          state.messages[messageIndex].is_deleted = true;
-        }
-
-        if (
-          state.currentConversation?.last_message?._id === action.payload._id
-        ) {
-          const updateLastMessage = list => {
-            const index = list.findIndex(
-              c =>
-                c.conversation_id === state.currentConversation.conversation_id,
-            );
-
-            if (
-              index !== -1 &&
-              list[index].last_message?._id === action.payload._id
-            ) {
-              list[index].last_message.is_deleted = true;
-            }
-          };
-
-          updateLastMessage(state.friendConversations);
-          updateLastMessage(state.strangerConversations);
-        }
-      })
-
-      .addCase(markAsReadMessage.fulfilled, (state, action) => {
-        const conversationId = action.meta.arg.conversationId;
-
-        const updateUnreadStatus = list => {
-          const index = list.findIndex(
-            c => c.conversation_id === conversationId,
-          );
-          if (index !== -1) {
-            list[index].unread = false;
-          }
-        };
-
-        updateUnreadStatus(state.friendConversations);
-        updateUnreadStatus(state.strangerConversations);
-      })
-
-      .addCase(forwardMessage.fulfilled, (state, action) => {
-        const targetConversationId = action.meta.arg.targetConversationId;
-
-        if (
-          state.currentConversation?.conversation_id === targetConversationId
-        ) {
-          state.messages.unshift(action.payload);
-        }
-
-        const updateConversation = list => {
-          const index = list.findIndex(
-            c => c.conversation_id === targetConversationId,
-          );
-
-          if (index !== -1) {
-            list[index].last_message = action.payload;
-            list[index].last_message_time = action.payload.createdAt;
-
-            const conversation = list[index];
-            list.splice(index, 1);
-            list.unshift(conversation);
-          }
-        };
-
-        updateConversation(state.friendConversations);
-        updateConversation(state.strangerConversations);
-      });
+      .addCase(forwardMessage.fulfilled, (state, action) => {});
   },
 });
 

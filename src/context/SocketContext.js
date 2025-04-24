@@ -2,7 +2,6 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {io} from 'socket.io-client';
 import {receiveMessage, updateConversation} from '../redux/slices/chatSlice';
-import {markAsReadMessage} from '../redux/thunks/chatThunks';
 
 const SocketContext = createContext();
 
@@ -43,7 +42,6 @@ export const SocketProvider = ({children, userId, token}) => {
       newSocket.on('receive_message', data => {
         console.log('📩 Message received:', data);
         dispatch(receiveMessage(data));
-        dispatch(markAsReadMessage(data.conversation_id));
       });
 
       newSocket.on('conversation_updated', data => {
@@ -66,7 +64,6 @@ export const SocketProvider = ({children, userId, token}) => {
         dispatch(
           updateMessageStatus({
             messageId: data._id,
-            updates: {is_deleted: true},
           }),
         );
       });

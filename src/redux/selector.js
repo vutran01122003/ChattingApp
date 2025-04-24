@@ -13,3 +13,5 @@ export const friendConversationsSelector = state =>
   state.chat.friendConversations;
 export const strangerConversationsSelector = state =>
   state.chat.strangerConversations;
+export const groupConversationsSelector = state =>
+  state.chat.groupConversations;

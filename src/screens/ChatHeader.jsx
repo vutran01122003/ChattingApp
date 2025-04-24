@@ -16,10 +16,12 @@ const ChatHeader = ({navigation, dispatch, currentConversation}) => {
 
       <View className="flex-1 ml-4">
         <Text className="text-white text-base font-bold">
-          {currentConversation.other_user.full_name}
+          {currentConversation.is_group
+            ? currentConversation.group_name
+            : currentConversation.other_user[0].full_name}
         </Text>
         <Text className="text-slate-200 text-xs">
-          {currentConversation.other_user.is_online
+          {currentConversation.other_user.some(o => o.is_online)
             ? 'Đang hoạt động'
             : `Lần cuối ${new Date(
                 currentConversation.other_user.last_seen,
