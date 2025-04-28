@@ -22,6 +22,7 @@ import ConversationScreen from './screens/ConversationScreen';
 import ChatMessageScreen from './screens/ChatMessageScreen';
 import {SocketProvider} from './context/SocketContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ForwardMessageScreen from './screens/ForwardMessageScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -120,6 +121,11 @@ function App() {
             <Stack.Screen
               name="ChatMessage"
               component={ChatMessageScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="ForwardMessageScreen"
+              component={ForwardMessageScreen}
               options={{headerShown: false}}
             />
           </Stack.Navigator>

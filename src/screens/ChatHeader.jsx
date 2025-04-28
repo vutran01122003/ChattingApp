@@ -24,7 +24,7 @@ const ChatHeader = ({navigation, dispatch, currentConversation}) => {
           {currentConversation.other_user.some(o => o.is_online)
             ? 'Đang hoạt động'
             : `Lần cuối ${new Date(
-                currentConversation.other_user.last_seen,
+                currentConversation.other_user[0].last_seen,
               ).toLocaleDateString('en-GB', {
                 day: '2-digit',
                 month: '2-digit',

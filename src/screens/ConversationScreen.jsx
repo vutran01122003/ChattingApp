@@ -8,18 +8,18 @@ import {
   StatusBar,
   Image,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {formatMessageTime} from '../utils/timeUtils';
 import {useDispatch, useSelector} from 'react-redux';
 import {
-  currentConversationSelector,
   friendConversationsSelector,
   groupConversationsSelector,
   strangerConversationsSelector,
+  userSelector,
 } from '../redux/selector';
 import {useIsFocused} from '@react-navigation/native';
 import {fetchAllConversations} from '../redux/thunks/chatThunks';
 import {useSocket} from '../context/SocketContext';
+import {getUserInfo} from '../redux/slices/userSlice';
 
 const ConversationScreen = ({navigation}) => {
   const friendConversation = useSelector(friendConversationsSelector);
@@ -28,9 +28,14 @@ const ConversationScreen = ({navigation}) => {
   const isFocus = useIsFocused();
   const dispatch = useDispatch();
   const {isConnected} = useSocket();
+  const user = useSelector(userSelector);
+  const getUserLogin = async () => {
+    await dispatch(getUserInfo());
+  };
 
   useEffect(() => {
     if (isFocus) {
+      getUserLogin();
       dispatch(fetchAllConversations());
     }
   }, [isFocus, dispatch]);
@@ -46,6 +51,30 @@ const ConversationScreen = ({navigation}) => {
 
   const renderConversation = ({item}) => {
     if (!item) return null;
+
+    let lastMessageText = 'Không có tin nhắn';
+    if (item.last_message) {
+      const {
+        deleted_by = [],
+        is_revoked,
+        content,
+        attachments,
+      } = item.last_message;
+
+      if (deleted_by.includes(user._id)) {
+        lastMessageText = 'Tin nhắn đã bị xóa';
+      } else if (is_revoked) {
+        lastMessageText = 'Tin nhắn đã bị thu hồi';
+      } else if (
+        attachments &&
+        attachments.length > 0 &&
+        attachments[attachments.length - 1].file_name
+      ) {
+        lastMessageText = attachments[attachments.length - 1].file_name;
+      } else if (content) {
+        lastMessageText = content;
+      }
+    }
 
     return (
       <TouchableOpacity
@@ -84,15 +113,7 @@ const ConversationScreen = ({navigation}) => {
             }`}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {item.last_message?.attachments &&
-            item.last_message?.attachments.length > 0 &&
-            item.last_message?.attachments[
-              item.last_message?.attachments.length - 1
-            ].file_name
-              ? item.last_message?.attachments[
-                  item.last_message?.attachments.length - 1
-                ].file_name
-              : item.last_message?.content || 'Không có tin nhắn'}
+            {lastMessageText}
           </Text>
         </View>
 

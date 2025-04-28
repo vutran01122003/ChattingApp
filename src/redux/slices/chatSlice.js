@@ -9,6 +9,8 @@ import {
   revokeMessage,
   deleteMessage,
   forwardMessage,
+  reactionMessage,
+  unReactionMessage,
 } from '../thunks/chatThunks';
 
 const initialState = {
@@ -98,15 +100,16 @@ const chatSlice = createSlice({
       }
     },
     updateMessageStatus: (state, action) => {
-      const {messageId, updates} = action.payload;
+      const data = action.payload;
+
       const messageIndex = state.messages.findIndex(
-        msg => msg._id === messageId,
+        msg => msg._id === data._id,
       );
 
       if (messageIndex !== -1) {
         state.messages[messageIndex] = {
           ...state.messages[messageIndex],
-          ...updates,
+          ...data,
         };
       }
     },
@@ -175,11 +178,80 @@ const chatSlice = createSlice({
         state.messages.unshift(action.payload);
       })
 
-      .addCase(revokeMessage.fulfilled, (state, action) => {})
+      .addCase(revokeMessage.fulfilled, (state, action) => {
+        const updatedMessage = action.payload;
 
-      .addCase(deleteMessage.fulfilled, (state, action) => {})
+        const index = state.messages.findIndex(
+          msg => msg._id === updatedMessage._id,
+        );
 
-      .addCase(forwardMessage.fulfilled, (state, action) => {});
+        if (index !== -1) {
+          state.messages[index] = {
+            ...state.messages[index],
+            ...updatedMessage,
+          };
+        }
+      })
+
+      .addCase(deleteMessage.fulfilled, (state, action) => {
+        const updatedMessage = action.payload;
+
+        const index = state.messages.findIndex(
+          msg => msg._id === updatedMessage._id,
+        );
+
+        if (index !== -1) {
+          state.messages[index] = {
+            ...state.messages[index],
+            ...updatedMessage,
+          };
+        }
+      })
+
+      .addCase(forwardMessage.fulfilled, (state, action) => {
+        const updatedMessage = action.payload;
+
+        const index = state.messages.findIndex(
+          msg => msg._id === updatedMessage._id,
+        );
+
+        if (index !== -1) {
+          state.messages[index] = {
+            ...state.messages[index],
+            ...updatedMessage,
+          };
+        }
+      })
+
+      .addCase(reactionMessage.fulfilled, (state, action) => {
+        const updatedMessage = action.payload;
+
+        const index = state.messages.findIndex(
+          msg => msg._id === updatedMessage._id,
+        );
+
+        if (index !== -1) {
+          state.messages[index] = {
+            ...state.messages[index],
+            ...updatedMessage,
+          };
+        }
+      })
+
+      .addCase(unReactionMessage.fulfilled, (state, action) => {
+        const updatedMessage = action.payload;
+
+        const index = state.messages.findIndex(
+          msg => msg._id === updatedMessage._id,
+        );
+
+        if (index !== -1) {
+          state.messages[index] = {
+            ...state.messages[index],
+            ...updatedMessage,
+          };
+        }
+      });
   },
 });
 

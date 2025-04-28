@@ -98,12 +98,16 @@ export const sendMessageWithFiles = createAsyncThunk(
 
 export const revokeMessage = createAsyncThunk(
   'messages/revokeMessage',
-  async ({messageId}, {rejectWithValue}) => {
+  async (messageId, {rejectWithValue}) => {
     try {
       const clientId = await AsyncStorage.getItem('client_id');
-      const response = await axios.put(`/messages/${messageId}/revoke`, {
-        headers: {'x-client-id': clientId},
-      });
+      const response = await axios.put(
+        `/messages/${messageId}/revoke`,
+        {},
+        {
+          headers: {'x-client-id': clientId},
+        },
+      );
       return response.data.metadata;
     } catch (err) {
       return rejectWithValue(
@@ -115,12 +119,17 @@ export const revokeMessage = createAsyncThunk(
 
 export const deleteMessage = createAsyncThunk(
   'messages/deleteMessage',
-  async ({messageId}, {rejectWithValue}) => {
+  async (messageId, {rejectWithValue}) => {
     try {
       const clientId = await AsyncStorage.getItem('client_id');
-      const response = await axios.put(`/messages/${messageId}/delete`, {
-        headers: {'x-client-id': clientId},
-      });
+      const response = await axios.put(
+        `/messages/${messageId}/delete`,
+        {},
+        {
+          headers: {'x-client-id': clientId},
+        },
+      );
+
       return response.data.metadata;
     } catch (err) {
       return rejectWithValue(
@@ -165,6 +174,48 @@ export const forwardMessage = createAsyncThunk(
         },
         {headers: {'x-client-id': clientId}},
       );
+      return response.data.metadata;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to mark conversation as read',
+      );
+    }
+  },
+);
+
+export const reactionMessage = createAsyncThunk(
+  'messages/reactionMessage',
+  async ({messageId, emoji}, {rejectWithValue, getState}) => {
+    try {
+      const clientId = await AsyncStorage.getItem('client_id');
+      const response = await axios.post(
+        '/messages/reaction',
+        {
+          message_id: messageId,
+          emoji,
+        },
+        {headers: {'x-client-id': clientId}},
+      );
+      return response.data.metadata;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to mark conversation as read',
+      );
+    }
+  },
+);
+
+export const unReactionMessage = createAsyncThunk(
+  'messages/unReactionMessage',
+  async (messageId, {rejectWithValue, getState}) => {
+    try {
+      const clientId = await AsyncStorage.getItem('client_id');
+
+      const response = await axios.delete('/messages/reaction', {
+        data: {message_id: messageId},
+        headers: {'x-client-id': clientId},
+      });
+
       return response.data.metadata;
     } catch (err) {
       return rejectWithValue(

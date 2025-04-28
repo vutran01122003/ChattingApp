@@ -1,7 +1,12 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {io} from 'socket.io-client';
-import {receiveMessage, updateConversation} from '../redux/slices/chatSlice';
+import {
+  receiveMessage,
+  updateConversation,
+  updateMessageStatus,
+} from '../redux/slices/chatSlice';
+import {markAsReadMessage} from '../redux/thunks/chatThunks';
 
 const SocketContext = createContext();
 
@@ -42,6 +47,7 @@ export const SocketProvider = ({children, userId, token}) => {
       newSocket.on('receive_message', data => {
         console.log('📩 Message received:', data);
         dispatch(receiveMessage(data));
+        dispatch(markAsReadMessage(data.conversation_id));
       });
 
       newSocket.on('conversation_updated', data => {
@@ -51,26 +57,22 @@ export const SocketProvider = ({children, userId, token}) => {
 
       newSocket.on('message_revoked', data => {
         console.log('🔄 Message revoked:', data);
-        dispatch(
-          updateMessageStatus({
-            messageId: data._id,
-            updates: {is_revoked: true},
-          }),
-        );
+        dispatch(updateMessageStatus(data));
       });
 
       newSocket.on('message_deleted', data => {
         console.log('🗑️ Message deleted:', data);
-        dispatch(
-          updateMessageStatus({
-            messageId: data._id,
-          }),
-        );
+        dispatch(updateMessageStatus(data));
       });
 
-      newSocket.on('message_forwarded', data => {
-        console.log('↪️ Message forwarded:', data);
-        dispatch(receiveMessage(data));
+      newSocket.on('reaction_addded', data => {
+        console.log('🗑️ Reaction added:', data);
+        dispatch(updateMessageStatus(data));
+      });
+
+      newSocket.on('reaction_removed', data => {
+        console.log('🗑️ Reaction removed:', data);
+        dispatch(updateMessageStatus(data));
       });
 
       newSocket.on('user_status', data => {
@@ -120,30 +122,27 @@ export const SocketProvider = ({children, userId, token}) => {
     }
   };
 
-  const revokeMessageSocket = (messageId, conversationId) => {
+  const revokeMessageSocket = data => {
     if (socket && isConnected) {
-      socket.emit('revoke_message', {
-        messageId,
-        conversation_id: conversationId,
-      });
+      socket.emit('revoke_message', data);
     }
   };
 
-  const deleteMessageSocket = (messageId, conversationId) => {
+  const deleteMessageSocket = data => {
     if (socket && isConnected) {
-      socket.emit('delete_message', {
-        messageId,
-        conversation_id: conversationId,
-      });
+      socket.emit('delete_message', data);
     }
   };
 
-  const forwardMessageSocket = (messageId, conversationId) => {
+  const addReactionSocket = data => {
     if (socket && isConnected) {
-      socket.emit('forward_message', {
-        messageId,
-        conversation_id: conversationId,
-      });
+      socket.emit('add_reaction', data);
+    }
+  };
+
+  const removeReactionSocket = data => {
+    if (socket && isConnected) {
+      socket.emit('remove_reaction', data);
     }
   };
 
@@ -165,7 +164,8 @@ export const SocketProvider = ({children, userId, token}) => {
         markMessageRead,
         revokeMessageSocket,
         deleteMessageSocket,
-        forwardMessageSocket,
+        addReactionSocket,
+        removeReactionSocket,
         disconnectSocket,
       }}>
       {children}

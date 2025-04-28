@@ -41,7 +41,6 @@ const ChatMessageScreen = ({route}) => {
   const currentConversation = useSelector(currentConversationSelector);
   const messagePagination = useSelector(messagePaginationSelector);
   const messages = useSelector(messagesSelector);
-
   const user = useSelector(userSelector);
 
   const {
@@ -54,6 +53,8 @@ const ChatMessageScreen = ({route}) => {
     markMessageRead,
     revokeMessageSocket,
     deleteMessageSocket,
+    addReactionSocket,
+    removeReactionSocket,
   } = useSocket();
   const [fullscreenMedia, setFullscreenMedia] = useState({
     visible: false,
@@ -347,6 +348,10 @@ const ChatMessageScreen = ({route}) => {
         currentUserId={user._id}
         openFullscreenMedia={openFullscreenMedia}
         currentConversation={currentConversation}
+        revokeMessageSocket={revokeMessageSocket}
+        deleteMessageSocket={deleteMessageSocket}
+        addReactionSocket={addReactionSocket}
+        removeReactionSocket={removeReactionSocket}
       />
       <View className="mt-2"></View>
       <MessageInput
