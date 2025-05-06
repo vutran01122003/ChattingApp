@@ -20,8 +20,12 @@ const MessageInput = ({
   handleSendMessage,
   onPickMedia,
   onPickFile,
+  conversation,
+  authUser
 }) => {
   const [showEmojis, setShowEmojis] = useState(false);
+  const allow_send_message = conversation?.allow_send_message;
+  const isAdminOrSub = [...conversation.admin, ...conversation.sub_admin].includes(authUser._id);
 
   const handleEmojiPress = emoji => {
     handleInputChange(inputText + emoji);
@@ -49,7 +53,7 @@ const MessageInput = ({
       <View className="flex-row items-center p-2">
         <TouchableOpacity
           className="mr-2"
-          onPress={() => setShowEmojis(!showEmojis)}>
+          onPress={() => allow_send_message || isAdminOrSub ? setShowEmojis(!showEmojis) : null}>
           <FontAwesome name="smile-o" size={24} color="#7D7D7D" />
         </TouchableOpacity>
 
@@ -60,14 +64,15 @@ const MessageInput = ({
           value={inputText}
           onChangeText={handleInputChange}
           multiline
+          readOnly={!(allow_send_message || isAdminOrSub)}
         />
 
         <View className="flex-row ml-2">
-          <TouchableOpacity className="ml-2" onPress={onPickMedia}>
+          <TouchableOpacity className="ml-2" onPress={allow_send_message || isAdminOrSub  ? onPickMedia : null}>
             <Ionicons name="image-outline" size={24} color="#7D7D7D" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="ml-2" onPress={onPickFile}>
+          <TouchableOpacity className="ml-2" onPress={allow_send_message || isAdminOrSub ? onPickFile : null}>
             <Feather name="paperclip" size={24} color="#7D7D7D" />
           </TouchableOpacity>
 
@@ -78,7 +83,7 @@ const MessageInput = ({
                 : ''
             }`}
             disabled={!inputText || isSending}
-            onPress={handleSendMessage}>
+            onPress={allow_send_message || isAdminOrSub ? handleSendMessage : null}>
             {isSending ? (
               <ActivityIndicator size="small" color="#7D7D7D" />
             ) : (

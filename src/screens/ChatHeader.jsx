@@ -3,13 +3,13 @@ import {View, Text, TouchableOpacity} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {clearCurrentConversation} from '../redux/slices/chatSlice';
 
-const ChatHeader = ({navigation, dispatch, currentConversation}) => {
+const ChatHeader = ({navigation, dispatch, currentConversation, authUser}) => {
   return (
     <View className="flex-row items-center p-3 bg-blue-500 h-16">
       <TouchableOpacity
         onPress={() => {
           dispatch(clearCurrentConversation());
-          navigation.goBack();
+          navigation.navigate("MainApp");
         }}>
         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
@@ -34,7 +34,7 @@ const ChatHeader = ({navigation, dispatch, currentConversation}) => {
               })}`}
         </Text>
       </View>
-
+              
       <View className="flex-row">
         <TouchableOpacity className="ml-4">
           <Ionicons name="call-outline" size={22} color="#FFFFFF" />
@@ -42,7 +42,12 @@ const ChatHeader = ({navigation, dispatch, currentConversation}) => {
         <TouchableOpacity className="ml-4">
           <Ionicons name="videocam-outline" size={22} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity className="ml-4">
+        <TouchableOpacity className="ml-4" onPress={() =>{
+          navigation.navigate("GroupInfo", {
+            conversationId: currentConversation.conversation_id,
+            authUser
+          })
+        }}>
           <Ionicons name="ellipsis-vertical" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

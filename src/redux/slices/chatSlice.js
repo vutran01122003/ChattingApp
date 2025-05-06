@@ -11,6 +11,9 @@ import {
   forwardMessage,
   reactionMessage,
   unReactionMessage,
+  updateMembersToConversation,
+  createConversation,
+  updateConversation,
 } from '../thunks/chatThunks';
 
 const initialState = {
@@ -62,7 +65,68 @@ const chatSlice = createSlice({
         }
       }
     },
-    updateConversation: (state, action) => {
+    addConversation: (state, action) => {
+      const newConv = action.payload;
+      if (newConv.conversation_type === "friend") {
+          if (!state.friendConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+              state.friendConversations.unshift(newConv);
+          }
+      } else if (newConv.conversation_type === "stranger") {
+          if (!state.strangerConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+              state.strangerConversations.unshift(newConv);
+          }
+      } else {
+          if (!state.groupConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+              state.groupConversations.unshift(newConv);
+          }
+      }
+    },
+    updateConv: (state, action) => {
+        const newConv = action.payload;
+        if (newConv.conversation_type === "friend") {
+            const index = state.friendConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.friendConversations[index] = newConv;
+        } else if (newConv.conversation_type === "stranger") {
+            const index = state.strangerConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.strangerConversations[index] = newConv;
+        } else {
+            const index = state.groupConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.groupConversations[index] = newConv;
+        }
+    },
+    removeConversation: (state, action) => {
+        const newConv = action.payload;
+
+        if (newConv.conversation_type === "friend") {
+            return {
+                ...state,
+                friendConversations: state.friendConversations.filter(
+                    (conversation) => conversation.conversation_id !== newConv.conversation_id
+                )
+            };
+        } else if (newConv.conversation_type === "stranger") {
+            return {
+                ...state,
+                strangerConversations: state.strangerConversations.filter(
+                    (conversation) => conversation.conversation_id !== newConv.conversation_id
+                )
+            };
+        } else {
+            return {
+                ...state,
+                groupConversations: state.groupConversations.filter(
+                    (conversation) => conversation.conversation_id !== newConv.conversation_id
+                )
+            };
+        }
+    },
+    updateLastMessageConversation: (state, action) => {
       const message = action.payload;
 
       const updateConversationList = list => {
@@ -121,6 +185,50 @@ const chatSlice = createSlice({
         state.strangerConversations = action.payload.strangers;
         state.groupConversations = action.payload.groups;
       })
+      .addCase(createConversation.fulfilled, (state, action) => {
+        const newConv = action.payload;
+        if (newConv.conversation_type === "friend") {
+            if (!state.friendConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+                state.friendConversations.unshift(newConv);
+            }
+        } else if (newConv.conversation_type === "stranger") {
+            if (!state.strangerConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+                state.strangerConversations.unshift(newConv);
+            }
+        } else {
+            if (!state.groupConversations.some((c) => c.conversation_id === newConv.conversation_id)) {
+                state.groupConversations.unshift(newConv);
+            }
+        }
+    })
+    .addCase(updateConversation.fulfilled, (state, action) => {
+        const newConv = action.payload;
+
+        if (newConv.conversation_type === "friend") {
+            const index = state.friendConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.friendConversations[index] = newConv;
+        } else if (newConv.conversation_type === "stranger") {
+            const index = state.strangerConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.strangerConversations[index] = newConv;
+        } else {
+            const index = state.groupConversations.findIndex(
+                (conversation) => conversation.conversation_id === newConv.conversation_id
+            );
+            if (index !== -1) state.groupConversations[index] = newConv;
+        }
+    })
+    .addCase(updateMembersToConversation.fulfilled, (state, action) => {
+        const newConv = action.payload;
+        let index = state.groupConversations.findIndex(
+            (conversation) => conversation.conversation_id === newConv.conversation_id
+        );
+
+        if (index != -1) state.groupConversations[index] = newConv;
+    })
 
       .addCase(getConversation.fulfilled, (state, action) => {
         state.currentConversation = action.payload;
@@ -258,7 +366,10 @@ const chatSlice = createSlice({
 export const {
   clearCurrentConversation,
   resetPagination,
-  updateConversation,
+  addConversation,
+  updateConv,
+  removeConversation,
+  updateLastMessageConversation,
   receiveMessage,
   updateMessageStatus,
 } = chatSlice.actions;

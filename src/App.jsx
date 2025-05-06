@@ -23,6 +23,9 @@ import ChatMessageScreen from './screens/ChatMessageScreen';
 import {SocketProvider} from './context/SocketContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ForwardMessageScreen from './screens/ForwardMessageScreen';
+import SearchScreen from './screens/SearchScreen';
+import GroupInfoScreen from './screens/GroupInfoScreen';
+import { navigationRef } from './component/NavigationService';
 
 const Stack = createNativeStackNavigator();
 
@@ -54,11 +57,16 @@ function App() {
   return (
     <AppProvider>
       <SocketProvider userId={user?.userId} token={user?.token}>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator initialRouteName="AuthLoading">
             <Stack.Screen
               name="AuthLoading"
               component={AuthLoadingScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="GroupInfo"
+              component={GroupInfoScreen}
               options={{headerShown: false}}
             />
             <Stack.Screen
@@ -128,6 +136,7 @@ function App() {
               component={ForwardMessageScreen}
               options={{headerShown: false}}
             />
+            <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true, title: 'Tìm kiếm' }} />
           </Stack.Navigator>
         </NavigationContainer>
       </SocketProvider>

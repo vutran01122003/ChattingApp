@@ -1,58 +1,68 @@
-import { Text, TouchableOpacity, View, SafeAreaView, StatusBar, FlatList, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, TouchableHighlight } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { countSelector, productSelector } from '../redux/selector';
-import { increase, decrease } from '../redux/slices/countSlice';
-import { fetchData } from '../redux/slices/productSlice';
-import { useEffect } from 'react';
-import { getUserInfo } from '../redux/slices/userSlice';
-import { logOut } from '../redux/slices/authSlice';
+import { getAllUser, getUserBySearch } from '../redux/slices/userSlice';
 
-function HomeScreen({navigation}) {
+const HomeScreen = ({ route }) => {
   const dispatch = useDispatch();
-  const count = useSelector(countSelector);
-  const product = useSelector(productSelector);
+  const [searchTerm, setSearchTerm] = useState(route.params?.searchTerm || '');
 
-  const increaseValue = () => {
-    dispatch(increase());
-  };
 
-  const decreaseValue = () => {
-    dispatch(decrease());
-  };
-  
+  const allUsers = useSelector(state => state.user.allUsers);
+  const searchResults = useSelector(state => state.user.searchResults);
+  const loading = useSelector(state => state.user.loading);
+  const error = useSelector(state => state.user.error);
+
   useEffect(() => {
-    dispatch(fetchData());
-  }, []);
-
-  const groups = [
-    { id: '1', name: 'Gia đình', avatar: 'https://via.placeholder.com/50', members: 5 },
-    { id: '2', name: 'Nhóm làm việc', avatar: 'https://via.placeholder.com/50', members: 12 },
-    // Thêm các nhóm khác
-  ];
+    if (searchTerm) {
+      dispatch(getUserBySearch(searchTerm));
+    } else {
+      dispatch(getAllUser());
+    }
+  }, [dispatch, searchTerm]);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity className="flex-row items-center p-3 border-b border-gray-200">
-      <Image 
-        source={{ uri: item.avatar }} 
-        className="w-12 h-12 rounded-full" 
-      />
-      <View className="ml-4">
-        <Text className="text-base">{item.name}</Text>
-        <Text className="text-gray-500 text-sm">{item.members} thành viên</Text>
+    <TouchableHighlight
+      underlayColor="#f0f0f0" 
+      onPress={() => {  }}
+      style={{ borderBottomWidth: 1, borderBottomColor: '#e0e0e0' }} 
+    >
+      <View className="flex-row items-center px-4 py-3">
+        <Image
+          source={{ uri: item.avatar_url }}  
+          className="w-12 h-12 rounded-full mr-3"
+        />
+        <View className="flex-1">
+          <Text className="font-bold text-base text-black">
+            {item.full_name || 'No name'}  
+          </Text>
+          <Text className="text-gray-500 text-sm" numberOfLines={1}>
+            {item.message || 'No message'} 
+          </Text>
+        </View>
+        <Text className="text-gray-400 text-sm">{item.timestamp || 'No time'}</Text> 
       </View>
-    </TouchableOpacity>
+    </TouchableHighlight>
   );
 
   return (
     <View className="flex-1 bg-white">
-      <FlatList
-        data={groups}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
+      {loading ? (
+        <Text className="text-center mt-5">Loading...</Text>
+      ) : error ? (
+        <Text className="text-center mt-5 text-red-500">Error: {error}</Text>
+      ) : (
+        <FlatList
+          data={searchTerm ? searchResults : allUsers}
+          renderItem={renderItem}
+          keyExtractor={item => item._id}
+          ListEmptyComponent={
+            <Text className="text-center mt-5">No users found.</Text>
+          }
+        />
+      )}
     </View>
   );
-}
+};
 
 export default HomeScreen;

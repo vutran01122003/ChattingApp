@@ -2,11 +2,15 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {io} from 'socket.io-client';
 import {
+  addConversation,
   receiveMessage,
-  updateConversation,
+  removeConversation,
+  updateConv,
+  updateLastMessageConversation,
   updateMessageStatus,
 } from '../redux/slices/chatSlice';
 import {markAsReadMessage} from '../redux/thunks/chatThunks';
+import { navigate } from '../component/NavigationService';
 
 const SocketContext = createContext();
 
@@ -20,7 +24,6 @@ export const SocketProvider = ({children, userId, token}) => {
   useEffect(() => {
     if (userId && token) {
       const newSocket = io(`http://${process.env.API_URL}:3055`, {
-        transports: ['websocket'],
         auth: {
           userId,
           token,
@@ -31,6 +34,7 @@ export const SocketProvider = ({children, userId, token}) => {
 
       newSocket.on('connect', () => {
         console.log('✅ Socket connected:', newSocket.id);
+        newSocket.emit("connected_user", userId);
         setIsConnected(true);
       });
 
@@ -52,7 +56,7 @@ export const SocketProvider = ({children, userId, token}) => {
 
       newSocket.on('conversation_updated', data => {
         console.log('🔄 Conversation updated:', data);
-        dispatch(updateConversation(data));
+        dispatch(updateLastMessageConversation(data));
       });
 
       newSocket.on('message_revoked', data => {
@@ -79,9 +83,38 @@ export const SocketProvider = ({children, userId, token}) => {
         console.log('👤 User status update:', data);
       });
 
+      const createConversationHandler = (data) => {
+        dispatch(addConversation(data));
+      };
+
+      const updateConversationMembersHandler = (data) => {
+          if (data.status === "add-members") {
+              if(data.newUserIdList.includes(userId)) dispatch(addConversation(data));
+              else dispatch(updateConv(data));
+          } else {
+              if (userId === data.removedUser._id) {
+                dispatch(removeConversation(data));
+                navigate('MainApp');
+              }
+              else dispatch(updateConv(data));
+          }
+      };
+
+      const updateConversationHandler = (data) => {
+          if (data.delete_group) navigate('MainApp');
+          dispatch(updateConv(data));
+      };
+
+      newSocket.on("create_conversation", createConversationHandler);
+      newSocket.on("update_conversation_members", updateConversationMembersHandler);
+      newSocket.on("update_conversation", updateConversationHandler);
+
       return () => {
-        newSocket.disconnect();
-        setIsConnected(false);
+            newSocket.disconnect();
+            setIsConnected(false);
+            newSocket.off("create_conversation", createConversationHandler);
+            newSocket.off("update_conversation_members", updateConversationMembersHandler);
+            newSocket.off("update_conversation", updateConversationHandler);
       };
     }
 

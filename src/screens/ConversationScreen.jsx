@@ -29,6 +29,7 @@ const ConversationScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const {isConnected} = useSocket();
   const user = useSelector(userSelector);
+  
   const getUserLogin = async () => {
     await dispatch(getUserInfo());
   };
@@ -50,7 +51,7 @@ const ConversationScreen = ({navigation}) => {
   );
 
   const renderConversation = ({item}) => {
-    if (!item) return null;
+    if (!item || !item.is_active) return null;
 
     let lastMessageText = 'Không có tin nhắn';
     if (item.last_message) {

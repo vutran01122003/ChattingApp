@@ -336,6 +336,7 @@ const ChatMessageScreen = ({route}) => {
         navigation={navigation}
         dispatch={dispatch}
         currentConversation={currentConversation}
+        authUser={user}
       />
       <MessageList
         flatListRef={flatListRef}
@@ -361,6 +362,8 @@ const ChatMessageScreen = ({route}) => {
         handleSendMessage={handleSendMessage}
         onPickMedia={handlePickMedia}
         onPickFile={handlePickFile}
+        conversation={currentConversation}
+        authUser={user}
       />
       <FullscreenMediaViewer
         visible={fullscreenMedia.visible}

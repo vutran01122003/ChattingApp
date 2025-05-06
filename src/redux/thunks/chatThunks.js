@@ -19,6 +19,21 @@ export const fetchAllConversations = createAsyncThunk(
   },
 );
 
+export const createConversation = createAsyncThunk(
+  "conversation/createConversation",
+  async (data, { rejectWithValue }) => {
+      try {
+          const clientId =  await AsyncStorage.getItem("client_id");
+          const response = await axios.post("/conversations", data, {
+              headers: { "x-client-id": clientId }
+          });
+          return response.data.metadata;
+      } catch (err) {
+          return rejectWithValue(err.response?.data?.message || "Failed to create conversation");
+      }
+  }
+);
+
 export const getConversation = createAsyncThunk(
   'conversation/getConversation',
   async (conversationId, {rejectWithValue}) => {
@@ -52,6 +67,37 @@ export const getConversationMessages = createAsyncThunk(
       );
     }
   },
+);
+
+export const updateMembersToConversation = createAsyncThunk(
+  "conversation/addMembersToConverstion",
+  async (data, { rejectWithValue }) => {
+      try {
+          const clientId = await AsyncStorage.getItem('client_id');
+          const response = await axios.post("/conversations/members", data, {
+              headers: { "x-client-id": clientId }
+          });
+          return response.data.metadata;
+      } catch (error) {
+          return rejectWithValue(error.response?.data?.message || "Failed to create conversation");
+      }
+  }
+);
+
+export const updateConversation = createAsyncThunk(
+  "conversation/updateConversation",
+  async (data, { rejectWithValue }) => {
+      try {
+          const clientId = await AsyncStorage.getItem('client_id');
+          const response = await axios.patch(`/conversations`, data, {
+            headers: {'x-client-id': clientId},
+          });
+
+          return response.data.metadata;
+      } catch (error) {
+          return rejectWithValue(error.response?.data?.message || "Failed to update conversation");
+      }
+  }
 );
 
 export const sendMessage = createAsyncThunk(

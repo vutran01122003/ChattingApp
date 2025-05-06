@@ -46,6 +46,22 @@ export const introspectToken = createAsyncThunk('auth/introspectToken', async (_
     }
 });
 
+export const getUserBySearch = createAsyncThunk("getUserBySearch", async ({ search, forGroup }) => {
+    const clientId = await AsyncStorage.getItem('client_id');
+    const accessToken = await AsyncStorage.getItem('access_token');
+    
+    const res = await getDataApi(
+        `/user/getUserBySearch/${search}`,
+        {
+            forGroup
+        },
+        {
+            "x-client-id": clientId,
+            Authorization: accessToken
+        }
+    );
+    return res.data;
+});
 
 export const logOut = createAsyncThunk('auth/logOut', async (_, { rejectWithValue }) => {
     try {
@@ -56,10 +72,8 @@ export const logOut = createAsyncThunk('auth/logOut', async (_, { rejectWithValu
                 'x-client-id': clientId, 
             },
         });
-        console.log(response.data.metadata || response.data)
         return response.data.metadata;
     } catch (error) {
-        console.log("LogoutError: ",error)
         return rejectWithValue(error.message);
     }
 });
@@ -172,7 +186,9 @@ const authSlice = createSlice({
             .addCase(refreshToken.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            }).addCase(getUserBySearch.fulfilled, (state, action) => {
+                state.allUsers = action.payload?.metadata;
+            });;
     },
 });
 

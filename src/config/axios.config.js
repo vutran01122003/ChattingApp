@@ -31,6 +31,7 @@ instance.interceptors.request.use(
       '/user/request-reset-password',
       '/user/verify-reset-password',
       '/user/reset-password',
+      'user/getAllUser'
     ];
     const isPublicRequest = publicEndpoints.some(endpoint =>
       config.url.includes(endpoint),
