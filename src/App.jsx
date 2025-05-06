@@ -26,6 +26,8 @@ import ForwardMessageScreen from './screens/ForwardMessageScreen';
 import SearchScreen from './screens/SearchScreen';
 import GroupInfoScreen from './screens/GroupInfoScreen';
 import { navigationRef } from './component/NavigationService';
+import ContactScreen from './screens/ContactScreen';
+import FriendRequestScreen from './screens/FriendRequsetScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -137,6 +139,8 @@ function App() {
               options={{headerShown: false}}
             />
             <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true, title: 'Tìm kiếm' }} />
+            <Stack.Screen name="ContactScreen" component={ContactScreen} options={{headerShown: false}} />
+            <Stack.Screen name="FriendRequestScreen" component={FriendRequestScreen} options={{headerShown: false}} />
           </Stack.Navigator>
         </NavigationContainer>
       </SocketProvider>

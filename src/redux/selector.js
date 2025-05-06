@@ -16,3 +16,4 @@ export const strangerConversationsSelector = state =>
 export const groupConversationsSelector = state =>
   state.chat.groupConversations;
 export const friendshipSelector = (state) => state.friendship;
+export const friendSelector = state => state.friend;

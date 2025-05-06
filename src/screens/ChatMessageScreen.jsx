@@ -6,7 +6,9 @@ import {
   ActivityIndicator,
   StatusBar,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
@@ -31,6 +33,15 @@ import MessageInput from './MessageInput';
 import MessageList from './MessageList';
 import {getUserInfo} from '../redux/slices/userSlice';
 import {pick, types} from '@react-native-documents/picker';
+import {
+  sendFriendRequest,
+  checkFriendShip,
+  checkSendRequest,
+  cancelFriendRequest,
+  checkReceiveRequest,
+  acceptFriendRequest,
+  unfriend,
+} from '../redux/slices/friendSlice';
 
 const ChatMessageScreen = ({route}) => {
   const navigation = useNavigation();
@@ -65,10 +76,68 @@ const ChatMessageScreen = ({route}) => {
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState();
   const [isSending, setIsSending] = useState(false);
-
+  const [restUser, setRestUser] = useState(null);
   const flatListRef = useRef(null);
   const hasScrolledToTop = useRef(false);
   const typingTimeoutRef = useRef(null);
+  const {isFriend, isSentRequest, isReceiveRequest} = useSelector(
+    state => state.friend,
+  );
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (
+      currentConversation &&
+      currentConversation.conversation_type !== 'group'
+    )
+      setRestUser(currentConversation.other_user[0]);
+  }, [currentConversation]);
+
+  useEffect(() => {
+    if (restUser) {
+      dispatch(checkFriendShip({friendId: restUser._id}));
+      dispatch(checkSendRequest({friendId: restUser._id}));
+      dispatch(checkReceiveRequest({friendId: restUser._id}));
+    }
+  }, [dispatch, restUser]);
+  console.log(isReceiveRequest);
+  console.log(restUser);
+
+  const handleSendFriendRequest = async () => {
+    try {
+      await dispatch(sendFriendRequest({friendId: restUser._id}));
+      dispatch(checkSendRequest({friendId: restUser._id})); // Re-fetch after sending request
+    } catch (error) {
+      console.error('Send friend request failed:', error);
+    }
+  };
+
+  const handleCancelFriendRequest = async () => {
+    try {
+      await dispatch(cancelFriendRequest({friendId: restUser._id}));
+      dispatch(checkSendRequest({friendId: restUser._id}));
+    } catch (error) {
+      console.error('Cancel friend request failed:', error);
+    }
+  };
+
+  const handleAcceptFriendRequest = async () => {
+    try {
+      await dispatch(acceptFriendRequest({friendId: restUser._id}));
+      dispatch(checkFriendShip({friendId: restUser._id}));
+    } catch (error) {
+      console.error('Accept friend request failed:', error);
+    }
+  };
+
+  const handleUnfriend = async () => {
+    try {
+      await dispatch(unfriend({friendId: restUser._id}));
+      dispatch(checkFriendShip({friendId: restUser._id}));
+    } catch (error) {
+      console.error('Unfriend failed:', error);
+    }
+  };
 
   const getUserLogin = async () => {
     await dispatch(getUserInfo());
@@ -338,6 +407,37 @@ const ChatMessageScreen = ({route}) => {
         currentConversation={currentConversation}
         authUser={user}
       />
+
+      <View className="bg-gray-100 py-2 flex-row justify-center">
+        <View className="flex-row items-center">
+          <Icon name="user-plus" size={16} color="#666" />
+
+          <TouchableOpacity
+            onPress={
+              isFriend
+                ? handleUnfriend
+                : isSentRequest
+                ? handleCancelFriendRequest
+                : isReceiveRequest
+                ? handleAcceptFriendRequest
+                : handleSendFriendRequest
+            }
+            className="flex-row items-center ml-2">
+            {isFriend ? (
+              <Text className="text-gray-700 text-sm ml-1">Xóa kết bạn</Text>
+            ) : isSentRequest ? (
+              <Text className="text-gray-700 text-sm ml-1">Hủy yêu cầu</Text>
+            ) : isReceiveRequest ? (
+              <Text className="text-gray-700 text-sm ml-1">Đồng ý kết bạn</Text>
+            ) : (
+              <Text className="text-gray-700 text-sm ml-1">
+                Gửi yêu cầu kết bạn
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <MessageList
         flatListRef={flatListRef}
         messages={messages}
@@ -354,6 +454,7 @@ const ChatMessageScreen = ({route}) => {
         addReactionSocket={addReactionSocket}
         removeReactionSocket={removeReactionSocket}
       />
+
       <View className="mt-2"></View>
       <MessageInput
         inputText={inputText}

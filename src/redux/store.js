@@ -7,6 +7,7 @@ import authSlice from './slices/authSlice';
 import userSlice from './slices/userSlice';
 import chatSlice from './slices/chatSlice';
 import friendshipReducer from "./slices/friendSlice";
+import friendSlice from './slices/friendSlice';
 
 const rootReducer = combineReducers({
   count: countReducer,
@@ -15,7 +16,8 @@ const rootReducer = combineReducers({
   authentication: authSlice,
   user: userSlice,
   chat: chatSlice,
-  friendship: friendshipReducer
+  friendship: friendshipReducer,
+  friend: friendSlice,
 });
 
 const store = configureStore({
