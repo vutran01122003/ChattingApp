@@ -20,6 +20,7 @@ import {useIsFocused} from '@react-navigation/native';
 import {fetchAllConversations} from '../redux/thunks/chatThunks';
 import {useSocket} from '../context/SocketContext';
 import {getUserInfo} from '../redux/slices/userSlice';
+import VideoCallScreen from '../component/VideoCallScreen';
 
 const ConversationScreen = ({navigation}) => {
   const friendConversation = useSelector(friendConversationsSelector);
@@ -29,7 +30,7 @@ const ConversationScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const {isConnected} = useSocket();
   const user = useSelector(userSelector);
-  
+
   const getUserLogin = async () => {
     await dispatch(getUserInfo());
   };
@@ -136,7 +137,6 @@ const ConversationScreen = ({navigation}) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#3B82F6" />
-
       {isConnected ? (
         <FlatList
           data={allConversations}
