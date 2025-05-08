@@ -10,7 +10,8 @@ import {
   updateMessageStatus,
 } from '../redux/slices/chatSlice';
 import {markAsReadMessage} from '../redux/thunks/chatThunks';
-import { navigate } from '../component/NavigationService';
+import {navigate} from '../component/NavigationService';
+import {calling, callUser} from '../redux/slices/callSlice';
 
 const SocketContext = createContext();
 
@@ -22,8 +23,13 @@ export const SocketProvider = ({children, userId, token}) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log({
+      userId,
+      token,
+    });
     if (userId && token) {
       const newSocket = io(`http://${process.env.API_URL}:3055`, {
+        transports: ['websocket'],
         auth: {
           userId,
           token,
@@ -34,7 +40,7 @@ export const SocketProvider = ({children, userId, token}) => {
 
       newSocket.on('connect', () => {
         console.log('✅ Socket connected:', newSocket.id);
-        newSocket.emit("connected_user", userId);
+        newSocket.emit('connected_user', userId);
         setIsConnected(true);
       });
 
@@ -83,38 +89,58 @@ export const SocketProvider = ({children, userId, token}) => {
         console.log('👤 User status update:', data);
       });
 
-      const createConversationHandler = (data) => {
+      const createConversationHandler = data => {
         dispatch(addConversation(data));
       };
 
-      const updateConversationMembersHandler = (data) => {
-          if (data.status === "add-members") {
-              if(data.newUserIdList.includes(userId)) dispatch(addConversation(data));
-              else dispatch(updateConv(data));
-          } else {
-              if (userId === data.removedUser._id) {
-                dispatch(removeConversation(data));
-                navigate('MainApp');
-              }
-              else dispatch(updateConv(data));
-          }
+      const updateConversationMembersHandler = data => {
+        if (data.status === 'add-members') {
+          if (data.newUserIdList.includes(userId))
+            dispatch(addConversation(data));
+          else dispatch(updateConv(data));
+        } else {
+          if (userId === data.removedUser._id) {
+            dispatch(removeConversation(data));
+            navigate('MainApp');
+          } else dispatch(updateConv(data));
+        }
       };
 
-      const updateConversationHandler = (data) => {
-          if (data.delete_group) navigate('MainApp');
-          dispatch(updateConv(data));
+      const updateConversationHandler = data => {
+        if (data.delete_group) navigate('MainApp');
+        dispatch(updateConv(data));
       };
 
-      newSocket.on("create_conversation", createConversationHandler);
-      newSocket.on("update_conversation_members", updateConversationMembersHandler);
-      newSocket.on("update_conversation", updateConversationHandler);
+      const answerHandler = data => {
+        navigate('ChatMessage', {
+          conversationId: data.conversationId,
+        });
+
+        dispatch(callUser(data));
+      };
+
+      const callingHandler = () => {
+        dispatch(calling(true));
+      };
+
+      newSocket.on('answer_user_mobile', answerHandler);
+      newSocket.on('calling_mobile', callingHandler);
+      newSocket.on('create_conversation', createConversationHandler);
+      newSocket.on(
+        'update_conversation_members',
+        updateConversationMembersHandler,
+      );
+      newSocket.on('update_conversation', updateConversationHandler);
 
       return () => {
-            newSocket.disconnect();
-            setIsConnected(false);
-            newSocket.off("create_conversation", createConversationHandler);
-            newSocket.off("update_conversation_members", updateConversationMembersHandler);
-            newSocket.off("update_conversation", updateConversationHandler);
+        newSocket.disconnect();
+        setIsConnected(false);
+        newSocket.off('create_conversation', createConversationHandler);
+        newSocket.off(
+          'update_conversation_members',
+          updateConversationMembersHandler,
+        );
+        newSocket.off('update_conversation', updateConversationHandler);
       };
     }
 

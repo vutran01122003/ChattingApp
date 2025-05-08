@@ -34,7 +34,7 @@ function ProfileScreen({navigation, route}) {
         if (!user.is_has_password) {
           navigation.navigate('CreatePassword');
         } else {
-          await dispatch(updateUserStatus(false));
+          dispatch(updateUserStatus(false));
           const reuslt = await dispatch(logOut());
           console.log('Logout result:', reuslt);
           if (reuslt.meta.requestStatus === 'fulfilled') {

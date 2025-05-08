@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { logIn } from '../redux/slices/authSlice';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {logIn} from '../redux/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -12,24 +22,28 @@ const LoginScreen = ({ navigation }) => {
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const handleLogin = async () => {
+    console.log('ok');
     if (!phone || !password) {
       Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ số điện thoại và mật khẩu');
       return;
     }
 
     try {
-      const result = await dispatch(logIn({ phone, password }));
+      const result = await dispatch(logIn({phone, password}));
       console.log('Login result:', result);
       if (result.meta.requestStatus === 'fulfilled') {
         Alert.alert('Đăng nhập thành công');
-        const { tokens, user } = result.payload;
-        const { accessToken, refreshToken } = tokens;
+        const {tokens, user} = result.payload;
+        const {accessToken, refreshToken} = tokens;
         await AsyncStorage.setItem('access_token', accessToken);
         await AsyncStorage.setItem('refresh_token', refreshToken);
         await AsyncStorage.setItem('client_id', user._id);
         navigation.navigate('AuthLoading');
       } else {
-        Alert.alert('Đăng nhập thất bại', result.payload?.message || 'Sai thông tin đăng nhập');
+        Alert.alert(
+          'Đăng nhập thất bại',
+          result.payload?.message || 'Sai thông tin đăng nhập',
+        );
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -39,10 +53,11 @@ const LoginScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.innerContainer}>
-        <Text style={styles.title}>Vui lòng nhập số điện thoại và mật khẩu để đăng nhập</Text>
+        <Text style={styles.title}>
+          Vui lòng nhập số điện thoại và mật khẩu để đăng nhập
+        </Text>
 
         {/* Ô nhập số điện thoại */}
         <View style={styles.inputContainer}>
@@ -81,20 +96,22 @@ const LoginScreen = ({ navigation }) => {
             onBlur={() => setIsPasswordFocused(false)}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Text style={styles.showPasswordText}>{showPassword ? 'Ẩn' : 'Hiện'}</Text>
+            <Text style={styles.showPasswordText}>
+              {showPassword ? 'Ẩn' : 'Hiện'}
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Nút "Lấy lại mật khẩu" */}
-        <TouchableOpacity style={styles.forgotPassword}
-          onPress={() => navigation.navigate('PasswordRecovery')}
-        >
+        <TouchableOpacity
+          style={styles.forgotPassword}
+          onPress={() => navigation.navigate('PasswordRecovery')}>
           <Text style={styles.forgotPasswordText}>Lấy lại mật khẩu</Text>
         </TouchableOpacity>
 
         {/* Nút Đăng nhập */}
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={{ color: 'white', fontSize: 24 }}>Đăng nhập</Text>
+          <Text style={{color: 'white', fontSize: 24}}>Đăng nhập</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

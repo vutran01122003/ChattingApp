@@ -406,6 +406,7 @@ const ChatMessageScreen = ({route}) => {
         dispatch={dispatch}
         currentConversation={currentConversation}
         authUser={user}
+        restUser={restUser}
       />
 
       <View className="bg-gray-100 py-2 flex-row justify-center">

@@ -7,6 +7,7 @@ const instance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+console.log(process.env.API_URL);
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -31,7 +32,7 @@ instance.interceptors.request.use(
       '/user/request-reset-password',
       '/user/verify-reset-password',
       '/user/reset-password',
-      'user/getAllUser'
+      'user/getAllUser',
     ];
     const isPublicRequest = publicEndpoints.some(endpoint =>
       config.url.includes(endpoint),

@@ -1,6 +1,13 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {View, Text, TouchableOpacity, SafeAreaView, Input, TextInput} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  Input,
+  TextInput,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -14,7 +21,7 @@ import {useNavigation} from '@react-navigation/native';
 import ChangePasswordScreen from './ChangePasswordScreen';
 import {Scanner} from './CameraScanner';
 import ConversationScreen from './ConversationScreen';
-import { useState } from 'react';
+import {useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CreateGroupModal from '../component/CreateGroupModal';
 import ContactScreen from './ContactScreen';
@@ -27,20 +34,25 @@ const CustomHeader = ({route}) => {
   const navigation = useNavigation();
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCreateGroup, setVisibleCreateGroup] = useState(false);
-  
+
   const handleSearchInputPress = async () => {
-      navigation.navigate('SearchScreen', { searchTerm: searchTerm });
+    navigation.navigate('SearchScreen', {searchTerm: searchTerm});
   };
 
   const handleToggleDisplayCreateGroupModal = () => {
     setVisibleCreateGroup(prev => !prev);
-  }
+  };
 
   return (
     <SafeAreaView className="flex-row items-center bg-blue-500 px-4 py-2">
-      {
-        visibleCreateGroup && <CreateGroupModal handleToggleDisplayCreateGroupModal={handleToggleDisplayCreateGroupModal} visible={visibleCreateGroup}/>
-      }
+      {visibleCreateGroup && (
+        <CreateGroupModal
+          handleToggleDisplayCreateGroupModal={
+            handleToggleDisplayCreateGroupModal
+          }
+          visible={visibleCreateGroup}
+        />
+      )}
 
       <View className="flex-row items-center bg-blue-400 flex-1 rounded-md px-2 py-1">
         <Ionicons name="search" size={20} color="#ffffff" />
@@ -49,7 +61,7 @@ const CustomHeader = ({route}) => {
           value={searchTerm}
           onChangeText={setSearchTerm}
           className="text-white ml-2"
-          onFocus={handleSearchInputPress}  
+          onFocus={handleSearchInputPress}
         />
       </View>
       {isProfileScreen ? (
@@ -64,7 +76,9 @@ const CustomHeader = ({route}) => {
             <Icon name="qrcode-scan" size={24} color="#ffffff" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="ml-3" onPress={handleToggleDisplayCreateGroupModal}>
+          <TouchableOpacity
+            className="ml-3"
+            onPress={handleToggleDisplayCreateGroupModal}>
             <AntDesign name="plus" size={24} color="#ffffff" />
           </TouchableOpacity>
         </>
