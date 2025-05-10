@@ -1,10 +1,10 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../config/axios.config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const sendFriendRequest = createAsyncThunk(
   'user/sendFriendRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -29,7 +29,7 @@ export const sendFriendRequest = createAsyncThunk(
 
 export const checkFriendShip = createAsyncThunk(
   'checkFriendShip',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -37,7 +37,7 @@ export const checkFriendShip = createAsyncThunk(
     }
 
     const res = await axios.get(`/user/check-friendship/${friendId}`, {
-      headers: {'x-client-id': clientId},
+      headers: { 'x-client-id': clientId },
     });
 
     return {
@@ -49,7 +49,7 @@ export const checkFriendShip = createAsyncThunk(
 
 export const checkSendRequest = createAsyncThunk(
   'checkSendRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -62,8 +62,6 @@ export const checkSendRequest = createAsyncThunk(
       },
     });
 
-    console.log('checkSendRequest', res);
-
     return {
       isSentRequest: res.data.metadata.isSentRequest,
       message: res.data.metadata.message,
@@ -73,7 +71,7 @@ export const checkSendRequest = createAsyncThunk(
 
 export const cancelFriendRequest = createAsyncThunk(
   'cancelFriendRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -97,7 +95,7 @@ export const cancelFriendRequest = createAsyncThunk(
 
 export const checkReceiveRequest = createAsyncThunk(
   'checkReceiveRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -120,7 +118,7 @@ export const checkReceiveRequest = createAsyncThunk(
 
 export const declineFriendRequest = createAsyncThunk(
   'declineFriendRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -144,7 +142,7 @@ export const declineFriendRequest = createAsyncThunk(
 
 export const acceptFriendRequest = createAsyncThunk(
   'acceptFriendRequest',
-  async ({friendId}) => {
+  async ({ friendId }) => {
     const clientId = await AsyncStorage.getItem('client_id');
     const accessToken = await AsyncStorage.getItem('access_token');
     if (!clientId || !accessToken) {
@@ -166,7 +164,7 @@ export const acceptFriendRequest = createAsyncThunk(
   },
 );
 
-export const unfriend = createAsyncThunk('unfriend', async ({friendId}) => {
+export const unfriend = createAsyncThunk('unfriend', async ({ friendId }) => {
   const clientId = await AsyncStorage.getItem('client_id');
   const accessToken = await AsyncStorage.getItem('access_token');
   if (!clientId || !accessToken) {
@@ -187,40 +185,33 @@ export const unfriend = createAsyncThunk('unfriend', async ({friendId}) => {
   };
 });
 
-export const getFriendList = createAsyncThunk(
-  'getFriendList',
-  async () => {
-    const clientId = await AsyncStorage.getItem('client_id');
-    const accessToken = await AsyncStorage.getItem('access_token');
-    if (!clientId || !accessToken) {
-      throw new Error('Please log in again.');
-    }
-    const res = await axios.get('/user/get-friend-list', {
-      headers: {
-        'x-client-id': clientId,
-      },
-    });
-    console.log('Friend List:', res);
-    return res.data.metadata;
-  },
-);
+export const getFriendList = createAsyncThunk('getFriendList', async () => {
+  const clientId = await AsyncStorage.getItem('client_id');
+  const accessToken = await AsyncStorage.getItem('access_token');
+  if (!clientId || !accessToken) {
+    throw new Error('Please log in again.');
+  }
+  const res = await axios.get('/user/get-friend-list', {
+    headers: {
+      'x-client-id': clientId,
+    },
+  });
+  return res.data.metadata;
+});
 
-export const getSentRequests = createAsyncThunk(
-  'getSentRequests',
-  async () => {
-    const clientId = await AsyncStorage.getItem('client_id');
-    const accessToken = await AsyncStorage.getItem('access_token');
-    if (!clientId || !accessToken) {
-      throw new Error('Please log in again.');
-    }
-    const res = await axios.get('/user/get-send-friend-request', {
-      headers: {
-        'x-client-id': clientId,
-      },
-    });
-    return res.data.metadata;
-  },
-);
+export const getSentRequests = createAsyncThunk('getSentRequests', async () => {
+  const clientId = await AsyncStorage.getItem('client_id');
+  const accessToken = await AsyncStorage.getItem('access_token');
+  if (!clientId || !accessToken) {
+    throw new Error('Please log in again.');
+  }
+  const res = await axios.get('/user/get-send-friend-request', {
+    headers: {
+      'x-client-id': clientId,
+    },
+  });
+  return res.data.metadata;
+});
 
 export const getReceivedRequests = createAsyncThunk(
   'getReceivedRequests',
@@ -256,6 +247,11 @@ const friendSlice = createSlice({
     resetError(state) {
       state.error = null;
     },
+    setIsFriend(state, action) {
+      state.isFriend = action.payload;
+      state.isReceiveRequest = false; // Reset isReceiveRequest khi là bạn bè
+      state.isSentRequest = false; // Reset isSentRequest khi là bạn bè
+    },
   },
   extraReducers: builder => {
     builder
@@ -266,7 +262,7 @@ const friendSlice = createSlice({
       .addCase(sendFriendRequest.fulfilled, (state, action) => {
         state.loading = false;
         state.message = action.payload.message;
-        state.isFriend = false;
+        state.isSentRequest = true;
       })
       .addCase(sendFriendRequest.rejected, (state, action) => {
         state.loading = false;
@@ -318,7 +314,7 @@ const friendSlice = createSlice({
       .addCase(declineFriendRequest.fulfilled, (state, action) => {
         state.loading = false;
         state.message = action.payload.message;
-        state.isReceiveRequest = false; // Update the isReceiveRequest state to false after declining
+        state.isReceiveRequest = false;
       })
       .addCase(declineFriendRequest.rejected, (state, action) => {
         state.loading = false;
@@ -344,7 +340,9 @@ const friendSlice = createSlice({
       .addCase(acceptFriendRequest.fulfilled, (state, action) => {
         state.loading = false;
         state.message = action.payload.message;
-        state.isFriend = true; // Update the isFriend state to true after accepting the request
+        state.isFriend = true;
+        state.isReceiveRequest = false;
+        state.isSentRequest = false;
       })
       .addCase(acceptFriendRequest.rejected, (state, action) => {
         state.loading = false;
@@ -357,7 +355,7 @@ const friendSlice = createSlice({
       .addCase(unfriend.fulfilled, (state, action) => {
         state.loading = false;
         state.message = action.payload.message;
-        state.isFriend = false; // Update the isFriend state to false after unfriending
+        state.isFriend = false;
       })
       .addCase(unfriend.rejected, (state, action) => {
         state.loading = false;
@@ -402,5 +400,5 @@ const friendSlice = createSlice({
   },
 });
 
-export const {resetError} = friendSlice.actions;
+export const { resetError, setIsFriend } = friendSlice.actions;
 export default friendSlice.reducer;

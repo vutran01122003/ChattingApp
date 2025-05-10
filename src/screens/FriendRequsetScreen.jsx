@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,37 +10,88 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   getReceivedRequests,
   getSentRequests,
   declineFriendRequest,
   cancelFriendRequest,
   acceptFriendRequest,
+  checkFriendShip,
+  getFriendList,
+  checkSendRequest,
+  checkReceiveRequest,
 } from '../redux/slices/friendSlice';
+import { useSocket } from '../context/SocketContext';
 
 export default function FriendRequestScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { socket, isConnected, acceptFriendRequestSocket, declineFriendRequestSocket, cancelFriendRequestSocket } = useSocket();
 
-  const {receivedRequests, sentRequests, loading, error} = useSelector(
+  const { receivedRequests, sentRequests, loading, error } = useSelector(
     state => state.friend,
-  ); 
+  );
+  const [activeTab, setActiveTab] = useState('received');
 
-  const [activeTab, setActiveTab] = useState('received'); 
 
   useEffect(() => {
     if (activeTab === 'received') {
       dispatch(getReceivedRequests());
     } else if (activeTab === 'sent') {
-      dispatch(getSentRequests()); 
+      dispatch(getSentRequests());
     }
-  }, [dispatch, activeTab]); 
+  }, [dispatch, activeTab]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    socket.on('receive_friend_request', () => {
+      if (activeTab === 'received') {
+        dispatch(getReceivedRequests());
+      }
+    });
+
+    socket.on('friend_request_accepted', () => {
+      if (activeTab === 'sent') {
+        dispatch(getSentRequests());
+      }
+    });
+
+    socket.on('friend_request_accepted_success', () => {
+      if (activeTab === 'received') {
+        dispatch(getReceivedRequests());
+      }
+    });
+
+    socket.on('friend_request_declined', () => {
+      if (activeTab === 'sent') {
+        dispatch(getSentRequests());
+      }
+    });
+
+    socket.on('friend_request_canceled', () => {
+      if (activeTab === 'received') {
+        dispatch(getReceivedRequests());
+      }
+    });
+
+    return () => {
+      socket.off('receive_friend_request');
+      socket.off('friend_request_accepted');
+      socket.off('friend_request_accepted_success');
+      socket.off('friend_request_declined');
+      socket.off('friend_request_canceled');
+    };
+  }, [socket, isConnected, activeTab, dispatch]);
 
   const handleDeclineRequest = friendId => {
-    dispatch(declineFriendRequest({friendId}))
+    dispatch(declineFriendRequest({ friendId }))
       .then(() => {
-        dispatch(getReceivedRequests());
+        declineFriendRequestSocket(friendId);
+        setTimeout(() => {
+          dispatch(getReceivedRequests());
+        }, 1000);
       })
       .catch(error => {
         console.log('Error declining friend request:', error);
@@ -48,22 +99,32 @@ export default function FriendRequestScreen() {
   };
 
   const handleCancelRequest = friendId => {
-    dispatch(cancelFriendRequest({friendId}))
+    dispatch(cancelFriendRequest({ friendId }))
       .then(() => {
-        dispatch(getSentRequests()); 
+        cancelFriendRequestSocket(friendId);
+        setTimeout(() => {
+          dispatch(getSentRequests());
+        }, 1000);
       })
       .catch(error => {
         console.log('Error canceling friend request:', error);
       });
   };
 
-  const handleAcceptRequest = async friendId => {
-    dispatch(acceptFriendRequest({friendId}))
+  const handleAcceptRequest = (friendId) => {
+    dispatch(acceptFriendRequest({ friendId }))
       .then(() => {
-        dispatch(getReceivedRequests()); 
+        acceptFriendRequestSocket(friendId);
+        dispatch(getFriendList()); // Làm mới danh sách bạn bè
+        dispatch(getReceivedRequests()); // Làm mới danh sách lời mời
+        // Kiểm tra trạng thái quan hệ
+        dispatch(checkFriendShip({ friendId }));
+        dispatch(checkSendRequest({ friendId }));
+        dispatch(checkReceiveRequest({ friendId }));
       })
-      .catch(error => {
+      .catch((error) => {
         console.log('Error accepting friend request:', error);
+        alert('Không thể chấp nhận lời mời kết bạn. Vui lòng thử lại.');
       });
   };
 
@@ -75,7 +136,7 @@ export default function FriendRequestScreen() {
         <View key={index} className="p-4 border-b border-gray-100">
           <View className="flex-row">
             <Image
-              source={{uri: 'https://via.placeholder.com/50'}} 
+              source={{ uri: friend.avatar || 'https://via.placeholder.com/50' }}
               className="w-12 h-12 rounded-full mr-3"
             />
             <View className="flex-1">
@@ -89,20 +150,21 @@ export default function FriendRequestScreen() {
               <>
                 <TouchableOpacity
                   className="bg-gray-100 rounded-md py-2 px-6"
-                  onPress={() => handleDeclineRequest(friend._id)} 
+                  onPress={() => handleDeclineRequest(friend._id)}
                 >
                   <Text className="text-center text-gray-700">Từ chối</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="bg-blue-100 rounded-md py-2 px-6"
-                  onPress={() => handleAcceptRequest(friend._id)}>
+                  onPress={() => handleAcceptRequest(friend._id)}
+                >
                   <Text className="text-center text-blue-500">Đồng ý</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <TouchableOpacity
                 className="bg-gray-100 rounded-md py-2 px-6"
-                onPress={() => handleCancelRequest(friend._id)} 
+                onPress={() => handleCancelRequest(friend._id)}
               >
                 <Text className="text-center text-gray-700">Thu hồi</Text>
               </TouchableOpacity>
@@ -125,7 +187,8 @@ export default function FriendRequestScreen() {
         <View className="flex-row items-center">
           <TouchableOpacity
             className="mr-3"
-            onPress={() => navigation.goBack()}>
+            onPress={() => navigation.goBack()}
+          >
             <Icon name="chevron-left" size={24} color="white" />
           </TouchableOpacity>
           <Text className="text-white text-lg font-semibold">
@@ -142,11 +205,13 @@ export default function FriendRequestScreen() {
           className={`flex-1 py-3 items-center ${
             activeTab === 'received' ? 'border-b-2 border-blue-500' : ''
           }`}
-          onPress={() => setActiveTab('received')}>
+          onPress={() => setActiveTab('received')}
+        >
           <Text
             className={`text-base ${
               activeTab === 'received' ? 'text-blue-500' : 'text-gray-500'
-            }`}>
+            }`}
+          >
             Đã nhận {receivedRequests.length}
           </Text>
         </TouchableOpacity>
@@ -155,11 +220,13 @@ export default function FriendRequestScreen() {
           className={`flex-1 py-3 items-center ${
             activeTab === 'sent' ? 'border-b-2 border-blue-500' : ''
           }`}
-          onPress={() => setActiveTab('sent')}>
+          onPress={() => setActiveTab('sent')}
+        >
           <Text
             className={`text-base ${
               activeTab === 'sent' ? 'text-blue-500' : 'text-gray-500'
-            }`}>
+            }`}
+          >
             Đã gửi {sentRequests.length}
           </Text>
         </TouchableOpacity>
@@ -169,7 +236,6 @@ export default function FriendRequestScreen() {
       {error && <Text className="text-center text-red-500 py-4">{error}</Text>}
 
       <ScrollView className="flex-1">{renderRequests()}</ScrollView>
-
 
       <TouchableOpacity className="items-center py-4">
         <View className="flex-row items-center">
