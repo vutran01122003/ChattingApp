@@ -1,34 +1,27 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Zalo</Text>
-
-      <Image 
-        source={require('../assets/logoWelcome.png')} 
-        style={styles.image} 
-      />
-
+      <Text style={styles.logo}>Lochat</Text>
 
       <Text style={styles.title}>Gọi video ổn định</Text>
       <Text style={styles.subtitle}>
         Trò chuyện thật đã với chất lượng video ổn định mọi lúc, mọi nơi
       </Text>
 
-
       {/* Nút Đăng Nhập */}
-      <TouchableOpacity style={styles.loginButton}
-        onPress={() => navigation.navigate('LoginScreen')}
-      >
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={() => navigation.navigate('LoginScreen')}>
         <Text style={styles.loginText}>ĐĂNG NHẬP</Text>
       </TouchableOpacity>
 
       {/* Nút Đăng Ký */}
-      <TouchableOpacity style={styles.registerButton}
-        onPress={() => navigation.navigate('SignUp')}
-      >
+      <TouchableOpacity
+        style={styles.registerButton}
+        onPress={() => navigation.navigate('SignUp')}>
         <Text style={styles.registerText}>ĐĂNG KÝ</Text>
       </TouchableOpacity>
     </View>

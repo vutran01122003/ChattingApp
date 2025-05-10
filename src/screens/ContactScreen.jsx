@@ -8,21 +8,21 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather'; 
+import Icon from 'react-native-vector-icons/Feather';
 import {useDispatch, useSelector} from 'react-redux';
 import {getFriendList} from '../redux/slices/friendSlice';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 export default function ContactScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const {friendList, loading, error} = useSelector(state => state.friend); 
+  const {friendList, loading, error} = useSelector(state => state.friend);
 
   useEffect(() => {
     dispatch(getFriendList());
   }, [dispatch]);
 
-  console.log('Friend List:', friendList); 
+  console.log('Friend List:', friendList);
 
   if (loading) {
     return <Text>Loading...</Text>;
@@ -48,7 +48,9 @@ export default function ContactScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity className="flex-row items-center p-4"  onPress={() => navigation.navigate('FriendRequestScreen')}>
+      <TouchableOpacity
+        className="flex-row items-center p-4"
+        onPress={() => navigation.navigate('FriendRequestScreen')}>
         <View className="w-10 h-10 rounded-full bg-blue-500 items-center justify-center mr-3">
           <Icon name="users" size={20} color="white" />
         </View>
@@ -63,7 +65,7 @@ export default function ContactScreen() {
         </View>
         <View className="flex-1">
           <Text className="text-base">Danh bạ máy</Text>
-          <Text className="text-gray-500 text-sm">Liên hệ có dùng Zalo</Text>
+          <Text className="text-gray-500 text-sm">Liên hệ có dùng Lochat</Text>
         </View>
       </TouchableOpacity>
 
@@ -78,13 +80,12 @@ export default function ContactScreen() {
 
       <View className="flex-row px-4 py-2">
         <TouchableOpacity className="bg-gray-200 rounded-full px-4 py-1 mr-2">
-        <Text>{`Tất cả ${friendList.length}`}</Text>
+          <Text>{`Tất cả ${friendList.length}`}</Text>
         </TouchableOpacity>
         <TouchableOpacity className="bg-gray-200 rounded-full px-4 py-1">
           <Text>Mới truy cập</Text>
         </TouchableOpacity>
       </View>
-
 
       <ScrollView className="flex-1">
         {friendList && friendList.length > 0 ? (
@@ -101,8 +102,7 @@ export default function ContactScreen() {
                 <TouchableOpacity className="flex-row items-center p-4">
                   <Image
                     source={{
-                      uri:
-                        friend.avatar_url ,
+                      uri: friend.avatar_url,
                     }}
                     className="w-10 h-10 rounded-full mr-3"
                   />

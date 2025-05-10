@@ -89,9 +89,9 @@ function ProfileScreen({navigation, route}) {
             <FontAweSome name="magic" size={20} color="#0084ff" />
           </View>
           <View className="flex-1">
-            <Text className="font-medium">zStyle – Nổi bật trên Zalo</Text>
+            <Text className="font-medium">zStyle – Nổi bật trên Lochat</Text>
             <Text className="text-gray-500 text-sm">
-              Hình nền và nhạc cho cuộc gọi Zalo
+              Hình nền và nhạc cho cuộc gọi Lochat
             </Text>
           </View>
         </TouchableOpacity>
@@ -116,7 +116,7 @@ function ProfileScreen({navigation, route}) {
           <View className="flex-1">
             <Text className="font-medium">Dữ liệu trên máy</Text>
             <Text className="text-gray-500 text-sm">
-              Quản lý dữ liệu Zalo của bạn
+              Quản lý dữ liệu Lochat của bạn
             </Text>
           </View>
           <Text className="text-gray-400">›</Text>
