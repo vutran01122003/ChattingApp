@@ -9,6 +9,13 @@ import {
   updateLastMessageConversation,
   updateMessageStatus,
 } from '../redux/slices/chatSlice';
+import {
+  receiveFriendRequest,
+  acceptFriendRequest,
+  declineFriendRequest,
+  cancelFriendRequest,
+  unfriendUser,
+} from '../redux/slices/friendSlice';
 import {markAsReadMessage} from '../redux/thunks/chatThunks';
 import {navigate} from '../component/NavigationService';
 import {calling, callUser} from '../redux/slices/callSlice';
@@ -46,6 +53,9 @@ export const SocketProvider = ({children, userId, token}) => {
 
       newSocket.on('connect_error', err => {
         console.log('❌ Socket connection error:', err.message);
+        setTimeout(() => {
+          newSocket.connect();
+        }, 1000);
         setIsConnected(false);
       });
 
@@ -92,6 +102,36 @@ export const SocketProvider = ({children, userId, token}) => {
       const createConversationHandler = data => {
         dispatch(addConversation(data));
       };
+
+      newSocket.on('receive_friend_request', data => {
+        console.log('📩 Nhận lời mời kết bạn:', data);
+        dispatch(receiveFriendRequest(data));
+      });
+
+      newSocket.on('friend_request_accepted', data => {
+        console.log('✅ Lời mời kết bạn được chấp nhận:', data);
+        dispatch(acceptFriendRequest(data));
+      });
+
+      newSocket.on('friend_request_accept_success', data => {
+        console.log('✅ Chấp nhận lời mời kết bạn thành công:', data);
+        dispatch(acceptFriendRequest(data));
+      });
+
+      newSocket.on('friend_request_declined', data => {
+        console.log('❌ Lời mời kết bạn bị từ chối:', data);
+        dispatch(declineFriendRequest(data));
+      });
+
+      newSocket.on('friend_request_canceled', data => {
+        console.log('🗑️ Lời mời kết bạn bị hủy:', data);
+        dispatch(cancelFriendRequest(data));
+      });
+
+      newSocket.on('user_unfriended', data => {
+        console.log('👤 Đã bị hủy kết bạn:', data);
+        dispatch(unfriendUser(data));
+      });
 
       const updateConversationMembersHandler = data => {
         if (data.status === 'add-members') {
@@ -211,6 +251,47 @@ export const SocketProvider = ({children, userId, token}) => {
     }
   };
 
+  const sendFriendRequestSocket = (
+    toUserId,
+    message = 'Bạn có một lời mời kết bạn mới!',
+  ) => {
+    if (socket && isConnected) {
+      socket.emit('send_friend_request', {
+        fromUserId: userId,
+        toUserId,
+        message,
+      });
+    }
+  };
+
+  const acceptFriendRequestSocket = toUserId => {
+    if (socket && isConnected) {
+      socket.emit('friend_request_accepted', {fromUserId: userId, toUserId});
+      socket.emit('friend_request_accept_success', {toUserId});
+    }
+  };
+
+  const declineFriendRequestSocket = fromUserId => {
+    if (socket && isConnected) {
+      socket.emit('friend_request_declined', {fromUserId, toUserId: userId});
+    }
+  };
+
+  const cancelFriendRequestSocket = toUserId => {
+    if (socket && isConnected) {
+      socket.emit('friend_request_canceled', {fromUserId: userId, toUserId});
+    }
+  };
+
+  const unfriendSocket = friendUserId => {
+    if (socket && isConnected) {
+      socket.emit('user_unfriended', {
+        fromUserId: userId,
+        toUserId: friendUserId,
+      });
+    }
+  };
+
   return (
     <SocketContext.Provider
       value={{
@@ -226,6 +307,11 @@ export const SocketProvider = ({children, userId, token}) => {
         addReactionSocket,
         removeReactionSocket,
         disconnectSocket,
+        sendFriendRequestSocket,
+        acceptFriendRequestSocket,
+        declineFriendRequestSocket,
+        cancelFriendRequestSocket,
+        unfriendSocket,
       }}>
       {children}
     </SocketContext.Provider>

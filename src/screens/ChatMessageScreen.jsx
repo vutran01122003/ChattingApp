@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   getConversation,
   getConversationMessages,
@@ -24,30 +24,31 @@ import {
   messagesSelector,
   userSelector,
 } from '../redux/selector';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import FullscreenMediaViewer from './FullScreenMediaViewer';
-import {clearCurrentConversation} from '../redux/slices/chatSlice';
-import {useSocket} from '../context/SocketContext';
+import { clearCurrentConversation } from '../redux/slices/chatSlice';
+import { useSocket } from '../context/SocketContext';
 import ChatHeader from './ChatHeader';
 import MessageInput from './MessageInput';
 import MessageList from './MessageList';
-import {getUserInfo} from '../redux/slices/userSlice';
-import {pick, types} from '@react-native-documents/picker';
+import { getUserInfo } from '../redux/slices/userSlice';
+import { pick, types } from '@react-native-documents/picker';
 import {
   sendFriendRequest,
   checkFriendShip,
   checkSendRequest,
-  cancelFriendRequest,
   checkReceiveRequest,
+  cancelFriendRequest,
   acceptFriendRequest,
   unfriend,
+  getFriendList,
 } from '../redux/slices/friendSlice';
 
-const ChatMessageScreen = ({route}) => {
+const ChatMessageScreen = ({ route }) => {
   const navigation = useNavigation();
   const isFocus = useIsFocused();
   const dispatch = useDispatch();
-  const {conversationId} = route.params;
+  const { conversationId } = route.params;
 
   const currentConversation = useSelector(currentConversationSelector);
   const messagePagination = useSelector(messagePaginationSelector);
@@ -66,6 +67,11 @@ const ChatMessageScreen = ({route}) => {
     deleteMessageSocket,
     addReactionSocket,
     removeReactionSocket,
+    sendFriendRequestSocket,
+    acceptFriendRequestSocket,
+    declineFriendRequestSocket,
+    cancelFriendRequestSocket,
+    unfriendSocket,
   } = useSocket();
   const [fullscreenMedia, setFullscreenMedia] = useState({
     visible: false,
@@ -80,33 +86,84 @@ const ChatMessageScreen = ({route}) => {
   const flatListRef = useRef(null);
   const hasScrolledToTop = useRef(false);
   const typingTimeoutRef = useRef(null);
-  const {isFriend, isSentRequest, isReceiveRequest} = useSelector(
+  const { isFriend, isSentRequest, isReceiveRequest } = useSelector(
     state => state.friend,
   );
-  const [message, setMessage] = useState('');
+
+  const loadFriendshipStatus = () => {
+    if (!restUser?._id) {
+      console.warn(`restUser không hợp lệ:`, restUser);
+      return;
+    }
+    if (!user?._id) {
+      console.error(`clientId không hợp lệ khi tải trạng thái:`, user);
+      return;
+    }
+    dispatch(checkFriendShip({ friendId: restUser._id }));
+    dispatch(checkSendRequest({ friendId: restUser._id }));
+    dispatch(checkReceiveRequest({ friendId: restUser._id }));
+  };
 
   useEffect(() => {
     if (
       currentConversation &&
       currentConversation.conversation_type !== 'group'
-    )
+    ) {
       setRestUser(currentConversation.other_user[0]);
+    }
   }, [currentConversation]);
 
   useEffect(() => {
     if (restUser) {
-      dispatch(checkFriendShip({friendId: restUser._id}));
-      dispatch(checkSendRequest({friendId: restUser._id}));
-      dispatch(checkReceiveRequest({friendId: restUser._id}));
+      loadFriendshipStatus();
     }
-  }, [dispatch, restUser]);
-  console.log(isReceiveRequest);
-  console.log(restUser);
+  }, [restUser]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    socket.on('receive_friend_request', () => {
+      dispatch(checkReceiveRequest({ friendId: restUser._id }));
+    });
+
+    socket.on('friend_request_accepted', () => {
+      dispatch({ type: 'friend/setIsFriend', payload: true });
+      dispatch(getFriendList());
+    });
+
+    socket.on('friend_request_accepted_success', () => {
+      dispatch(checkSendRequest({ friendId: restUser._id }));
+      dispatch({ type: 'friend/setIsFriend', payload: true });
+    });
+
+    socket.on('friend_request_declined', () => {
+      dispatch(checkSendRequest({ friendId: restUser._id }));
+    });
+
+    socket.on('friend_request_canceled', () => {
+      dispatch(checkReceiveRequest({ friendId: restUser._id }));
+    });
+
+    socket.on('user_unfriended', () => {
+      dispatch(checkFriendShip({ friendId: restUser._id }));
+      dispatch(getFriendList());
+    });
+
+    return () => {
+      socket.off('receive_friend_request');
+      socket.off('friend_request_accepted');
+      socket.off('friend_request_accepted_success');
+      socket.off('friend_request_declined');
+      socket.off('friend_request_canceled');
+      socket.off('user_unfriended');
+    };
+  }, [socket, isConnected, restUser, dispatch]);
 
   const handleSendFriendRequest = async () => {
     try {
-      await dispatch(sendFriendRequest({friendId: restUser._id}));
-      dispatch(checkSendRequest({friendId: restUser._id})); // Re-fetch after sending request
+      await dispatch(sendFriendRequest({ friendId: restUser._id }));
+      sendFriendRequestSocket(restUser._id);
+      dispatch(checkSendRequest({ friendId: restUser._id }));
     } catch (error) {
       console.error('Send friend request failed:', error);
     }
@@ -114,8 +171,9 @@ const ChatMessageScreen = ({route}) => {
 
   const handleCancelFriendRequest = async () => {
     try {
-      await dispatch(cancelFriendRequest({friendId: restUser._id}));
-      dispatch(checkSendRequest({friendId: restUser._id}));
+      await dispatch(cancelFriendRequest({ friendId: restUser._id }));
+      cancelFriendRequestSocket(restUser._id);
+      dispatch(checkSendRequest({ friendId: restUser._id }));
     } catch (error) {
       console.error('Cancel friend request failed:', error);
     }
@@ -123,8 +181,11 @@ const ChatMessageScreen = ({route}) => {
 
   const handleAcceptFriendRequest = async () => {
     try {
-      await dispatch(acceptFriendRequest({friendId: restUser._id}));
-      dispatch(checkFriendShip({friendId: restUser._id}));
+      await dispatch(acceptFriendRequest({ friendId: restUser._id }));
+      acceptFriendRequestSocket(restUser._id);
+      setTimeout(() => {
+        loadFriendshipStatus();
+      }, 1000);
     } catch (error) {
       console.error('Accept friend request failed:', error);
     }
@@ -132,8 +193,9 @@ const ChatMessageScreen = ({route}) => {
 
   const handleUnfriend = async () => {
     try {
-      await dispatch(unfriend({friendId: restUser._id}));
-      dispatch(checkFriendShip({friendId: restUser._id}));
+      await dispatch(unfriend({ friendId: restUser._id }));
+      unfriendSocket(restUser._id);
+      dispatch(checkFriendShip({ friendId: restUser._id }));
     } catch (error) {
       console.error('Unfriend failed:', error);
     }
@@ -168,7 +230,6 @@ const ChatMessageScreen = ({route}) => {
 
       if (isConnected) {
         joinConversation(currentConversation.conversation_id);
-
         dispatch(markAsReadMessage(currentConversation.conversation_id));
         markMessageRead(currentConversation.conversation_id);
       }
@@ -186,7 +247,7 @@ const ChatMessageScreen = ({route}) => {
         }
       });
 
-      socket.on('user_stop_typing', data => {
+      socket.on('user_stop_typing', () => {
         setTypingUsers(null);
       });
 
