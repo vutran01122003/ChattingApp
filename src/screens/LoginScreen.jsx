@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingLeft: 10,
     fontSize: 16,
+    marginTop: 5,
   },
   inputDefault: {
     borderBottomColor: '#ccc',

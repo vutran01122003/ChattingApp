@@ -5,7 +5,6 @@ const WelcomeScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>Lochat</Text>
-
       <Text style={styles.title}>Gọi video ổn định</Text>
       <Text style={styles.subtitle}>
         Trò chuyện thật đã với chất lượng video ổn định mọi lúc, mọi nơi
