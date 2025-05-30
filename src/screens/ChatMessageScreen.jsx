@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import Entypo from 'react-native-vector-icons/Entypo';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   getConversation,
   getConversationMessages,
@@ -24,15 +25,15 @@ import {
   messagesSelector,
   userSelector,
 } from '../redux/selector';
-import { launchImageLibrary } from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import FullscreenMediaViewer from './FullScreenMediaViewer';
-import { clearCurrentConversation } from '../redux/slices/chatSlice';
-import { useSocket } from '../context/SocketContext';
+import {clearCurrentConversation} from '../redux/slices/chatSlice';
+import {useSocket} from '../context/SocketContext';
 import ChatHeader from './ChatHeader';
 import MessageInput from './MessageInput';
 import MessageList from './MessageList';
-import { getUserInfo } from '../redux/slices/userSlice';
-import { pick, types } from '@react-native-documents/picker';
+import {getUserInfo} from '../redux/slices/userSlice';
+import {pick, types} from '@react-native-documents/picker';
 import {
   sendFriendRequest,
   checkFriendShip,
@@ -45,14 +46,14 @@ import {
   checkBlockedUser,
   checkIsBlockedUser,
   blockUser,
-  unblockUser
+  unblockUser,
 } from '../redux/slices/friendSlice';
 
-const ChatMessageScreen = ({ route }) => {
+const ChatMessageScreen = ({route}) => {
   const navigation = useNavigation();
   const isFocus = useIsFocused();
   const dispatch = useDispatch();
-  const { conversationId } = route.params;
+  const {conversationId} = route.params;
 
   const currentConversation = useSelector(currentConversationSelector);
   const messagePagination = useSelector(messagePaginationSelector);
@@ -92,9 +93,8 @@ const ChatMessageScreen = ({ route }) => {
   const flatListRef = useRef(null);
   const hasScrolledToTop = useRef(false);
   const typingTimeoutRef = useRef(null);
-  const { isFriend, isSentRequest, isReceiveRequest, isBlocked, isBlockedUser } = useSelector(
-    state => state.friend,
-  );
+  const {isFriend, isSentRequest, isReceiveRequest, isBlocked, isBlockedUser} =
+    useSelector(state => state.friend);
 
   const loadFriendshipStatus = () => {
     if (!restUser?._id) {
@@ -105,11 +105,11 @@ const ChatMessageScreen = ({ route }) => {
       console.error(`clientId không hợp lệ khi tải trạng thái:`, user);
       return;
     }
-    dispatch(checkFriendShip({ friendId: restUser._id }));
-    dispatch(checkSendRequest({ friendId: restUser._id }));
-    dispatch(checkReceiveRequest({ friendId: restUser._id }));
-    dispatch(checkBlockedUser({ userId: restUser._id }));
-    dispatch(checkIsBlockedUser({ userId: restUser._id }));
+    dispatch(checkFriendShip({friendId: restUser._id}));
+    dispatch(checkSendRequest({friendId: restUser._id}));
+    dispatch(checkReceiveRequest({friendId: restUser._id}));
+    dispatch(checkBlockedUser({userId: restUser._id}));
+    dispatch(checkIsBlockedUser({userId: restUser._id}));
   };
 
   useEffect(() => {
@@ -131,40 +131,40 @@ const ChatMessageScreen = ({ route }) => {
     if (!socket || !isConnected) return;
 
     socket.on('receive_friend_request', () => {
-      dispatch(checkReceiveRequest({ friendId: restUser._id }));
+      dispatch(checkReceiveRequest({friendId: restUser._id}));
     });
 
     socket.on('receive_user_blocked', () => {
-      dispatch(checkBlockedUser({ userId: restUser._id }));
-      dispatch(checkIsBlockedUser({ userId: restUser._id }));
-      dispatch(checkFriendShip({ friendId: restUser._id }));
+      dispatch(checkBlockedUser({userId: restUser._id}));
+      dispatch(checkIsBlockedUser({userId: restUser._id}));
+      dispatch(checkFriendShip({friendId: restUser._id}));
     });
 
     socket.on('user_unblocked', () => {
-      dispatch(checkBlockedUser({ userId: restUser._id }));
-      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+      dispatch(checkBlockedUser({userId: restUser._id}));
+      dispatch(checkIsBlockedUser({userId: restUser._id}));
     });
 
     socket.on('friend_request_accepted', () => {
-      dispatch({ type: 'friend/setIsFriend', payload: true });
+      dispatch({type: 'friend/setIsFriend', payload: true});
       dispatch(getFriendList());
     });
 
     socket.on('friend_request_accepted_success', () => {
-      dispatch(checkSendRequest({ friendId: restUser._id }));
-      dispatch({ type: 'friend/setIsFriend', payload: true });
+      dispatch(checkSendRequest({friendId: restUser._id}));
+      dispatch({type: 'friend/setIsFriend', payload: true});
     });
 
     socket.on('friend_request_declined', () => {
-      dispatch(checkSendRequest({ friendId: restUser._id }));
+      dispatch(checkSendRequest({friendId: restUser._id}));
     });
 
     socket.on('friend_request_canceled', () => {
-      dispatch(checkReceiveRequest({ friendId: restUser._id }));
+      dispatch(checkReceiveRequest({friendId: restUser._id}));
     });
 
     socket.on('user_unfriended', () => {
-      dispatch(checkFriendShip({ friendId: restUser._id }));
+      dispatch(checkFriendShip({friendId: restUser._id}));
       dispatch(getFriendList());
     });
 
@@ -181,9 +181,9 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleSendFriendRequest = async () => {
     try {
-      await dispatch(sendFriendRequest({ friendId: restUser._id }));
+      await dispatch(sendFriendRequest({friendId: restUser._id}));
       sendFriendRequestSocket(restUser._id);
-      dispatch(checkSendRequest({ friendId: restUser._id }));
+      dispatch(checkSendRequest({friendId: restUser._id}));
     } catch (error) {
       console.error('Send friend request failed:', error);
     }
@@ -191,10 +191,10 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleBlockUser = async () => {
     try {
-      await dispatch(blockUser({ userId: restUser._id }));
+      await dispatch(blockUser({userId: restUser._id}));
       blockUserSocket(restUser._id);
-      dispatch(checkBlockedUser({ userId: restUser._id }));
-      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+      dispatch(checkBlockedUser({userId: restUser._id}));
+      dispatch(checkIsBlockedUser({userId: restUser._id}));
     } catch (error) {
       console.error('Block user failed:', error);
     }
@@ -202,11 +202,11 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleUnblockUser = async () => {
     try {
-      await dispatch(unblockUser({ userId: restUser._id }));
-      blockUserSocket(restUser._id,'unblock');
-        
-      dispatch(checkBlockedUser({ userId: restUser._id }));
-      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+      await dispatch(unblockUser({userId: restUser._id}));
+      blockUserSocket(restUser._id, 'unblock');
+
+      dispatch(checkBlockedUser({userId: restUser._id}));
+      dispatch(checkIsBlockedUser({userId: restUser._id}));
     } catch (error) {
       console.error('Unblock user failed:', error);
     }
@@ -214,9 +214,9 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleCancelFriendRequest = async () => {
     try {
-      await dispatch(cancelFriendRequest({ friendId: restUser._id }));
+      await dispatch(cancelFriendRequest({friendId: restUser._id}));
       cancelFriendRequestSocket(restUser._id);
-      dispatch(checkSendRequest({ friendId: restUser._id }));
+      dispatch(checkSendRequest({friendId: restUser._id}));
     } catch (error) {
       console.error('Cancel friend request failed:', error);
     }
@@ -224,7 +224,7 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleAcceptFriendRequest = async () => {
     try {
-      await dispatch(acceptFriendRequest({ friendId: restUser._id }));
+      await dispatch(acceptFriendRequest({friendId: restUser._id}));
       acceptFriendRequestSocket(restUser._id);
       setTimeout(() => {
         loadFriendshipStatus();
@@ -236,9 +236,9 @@ const ChatMessageScreen = ({ route }) => {
 
   const handleUnfriend = async () => {
     try {
-      await dispatch(unfriend({ friendId: restUser._id }));
+      await dispatch(unfriend({friendId: restUser._id}));
       unfriendSocket(restUser._id);
-      dispatch(checkFriendShip({ friendId: restUser._id }));
+      dispatch(checkFriendShip({friendId: restUser._id}));
     } catch (error) {
       console.error('Unfriend failed:', error);
     }
@@ -515,59 +515,63 @@ const ChatMessageScreen = ({ route }) => {
 
       {currentConversation.conversation_type !== 'group' && (
         <View className="bg-gray-100 py-2 flex-row justify-center">
-        <View className="flex-row items-center">
-          
-          {isBlockedUser ?  (
-            <>
-              <Icon name="lock-open" size={16} color="#666" />
-              <TouchableOpacity
-                onPress={handleUnblockUser}
-                className="flex-row items-center ml-2"
-              >
-                <Text className="text-gray-700 text-sm ml-1">Bỏ chặn</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View className="flex-row items-center">
-                <Icon name="user-plus" size={16} color="#666" />
+          <View className="flex-row items-center">
+            {isBlockedUser ? (
+              <>
+                <Entypo name="lock-open" size={16} color="#666" />
                 <TouchableOpacity
-                  onPress={
-                    isFriend
-                      ? handleUnfriend
-                      : isSentRequest
-                      ? handleCancelFriendRequest
-                      : isReceiveRequest
-                      ? handleAcceptFriendRequest
-                      : handleSendFriendRequest
-                  }
-                  className="flex-row items-center ml-2"
-                >
-                  {isFriend ? (
-                    <Text className="text-gray-700 text-sm ml-1">Xóa kết bạn</Text>
-                  ) : isSentRequest ? (
-                    <Text className="text-gray-700 text-sm ml-1">Hủy yêu cầu</Text>
-                  ) : isReceiveRequest ? (
-                    <Text className="text-gray-700 text-sm ml-1">Đồng ý kết bạn</Text>
-                  ) : (
-                    <Text className="text-gray-700 text-sm ml-1">Gửi yêu cầu kết bạn</Text>
-                  )}
+                  onPress={handleUnblockUser}
+                  className="flex-row items-center ml-2">
+                  <Text className="text-gray-700 text-sm ml-1">Bỏ chặn</Text>
                 </TouchableOpacity>
-              </View>
+              </>
+            ) : (
+              <>
+                <View className="flex-row items-center">
+                  <Icon name="user-plus" size={16} color="#666" />
+                  <TouchableOpacity
+                    onPress={
+                      isFriend
+                        ? handleUnfriend
+                        : isSentRequest
+                        ? handleCancelFriendRequest
+                        : isReceiveRequest
+                        ? handleAcceptFriendRequest
+                        : handleSendFriendRequest
+                    }
+                    className="flex-row items-center ml-2">
+                    {isFriend ? (
+                      <Text className="text-gray-700 text-sm ml-1">
+                        Xóa kết bạn
+                      </Text>
+                    ) : isSentRequest ? (
+                      <Text className="text-gray-700 text-sm ml-1">
+                        Hủy yêu cầu
+                      </Text>
+                    ) : isReceiveRequest ? (
+                      <Text className="text-gray-700 text-sm ml-1">
+                        Đồng ý kết bạn
+                      </Text>
+                    ) : (
+                      <Text className="text-gray-700 text-sm ml-1">
+                        Gửi yêu cầu kết bạn
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
 
-              <View className="flex-row items-center ml-4">
-                <Icon name="lock" size={16} color="#666" />
-                <TouchableOpacity
-                  onPress={handleBlockUser}
-                  className="flex-row items-center ml-2"
-                >
-                  <Text className="text-gray-700 text-sm ml-1">Chặn</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+                <View className="flex-row items-center ml-4">
+                  <Icon name="lock" size={16} color="#666" />
+                  <TouchableOpacity
+                    onPress={handleBlockUser}
+                    className="flex-row items-center ml-2">
+                    <Text className="text-gray-700 text-sm ml-1">Chặn</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
         </View>
-      </View>
       )}
 
       <MessageList
