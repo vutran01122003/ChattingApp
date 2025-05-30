@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss');
+
 module.exports = function (api) {
   api.cache(true);
   return {
@@ -5,5 +7,6 @@ module.exports = function (api) {
       ['module:@react-native/babel-preset', {jsxImportSource: 'nativewind'}],
       'nativewind/babel',
     ],
+    plugins: [['module:react-native-dotenv']],
   };
 };

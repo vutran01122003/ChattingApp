@@ -1,12 +1,18 @@
 import React, { useState, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
-import Icon from "react-native-vector-icons/Entypo"
+import Icon from "react-native-vector-icons/Entypo";
+import { useDispatch, useSelector } from 'react-redux';
+import { signUp, verifyOTP } from '../redux/slices/authSlice';
+import {otpTokenSelector} from '../redux/selector'
 const OtpVerificationScreen = ({ route, navigation }) => {
+    const dispatch = useDispatch();
     const { phoneNumber } = route.params || {};
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [countdown, setCountdown] = useState(60);
     const [isResendDisabled, setIsResendDisabled] = useState(true);
     const otpInputs = useRef([]);
+    let otpToken = useSelector(otpTokenSelector);
     const handleOtpChange = (index, value) => {
         if (value.length > 1) return;
         let newOtp = [...otp];
@@ -22,11 +28,27 @@ const OtpVerificationScreen = ({ route, navigation }) => {
             }
         }
     };
-    const handleResendOtp = () => {
+    const handleResendOtp = async () => {
         setCountdown(60);
         setIsResendDisabled(true);
-        // API
-        console.log('Gửi lại mã OTP...');
+        try {
+            const resultAction = await dispatch(signUp({ phone: phoneNumber })).unwrap();
+            otpToken = resultAction.token;
+        } catch (error) {
+            console.error('Resend OTP failed:', error);
+        }
+    };
+    const handleVerifyOtp = async () => {
+        const otpCode = otp.join('');
+        try {
+            const resultAction = await dispatch(verifyOTP({ otp: otpCode, token: otpToken })).unwrap();
+            await AsyncStorage.setItem('client_id', resultAction.user._id);
+            await AsyncStorage.setItem('access_token', resultAction.tokens.accessToken);
+            await AsyncStorage.setItem('refresh_token', resultAction.tokens.refreshToken);
+            navigation.navigate('NameInputScreen', { phoneNumber });
+        } catch (error) {
+            console.error('OTP verification failed:', error);
+        }
     };
     React.useEffect(() => {
         if (countdown > 0) {
@@ -63,6 +85,7 @@ const OtpVerificationScreen = ({ route, navigation }) => {
 
             <TouchableOpacity className={`py-3 rounded-3xl mt-6 w-full ${otp.includes("")? "bg-gray-300" : "bg-blue-600"} `}
                 disabled={otp.includes("")}
+                onPress={handleVerifyOtp}
             >
                 <Text className={`text-center text-lg font-semibold ${otp.includes("") ? "text-gray-500" : "text-white"}`}>Tiếp tục</Text>
             </TouchableOpacity>
