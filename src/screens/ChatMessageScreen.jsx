@@ -42,6 +42,10 @@ import {
   acceptFriendRequest,
   unfriend,
   getFriendList,
+  checkBlockedUser,
+  checkIsBlockedUser,
+  blockUser,
+  unblockUser
 } from '../redux/slices/friendSlice';
 
 const ChatMessageScreen = ({ route }) => {
@@ -72,6 +76,8 @@ const ChatMessageScreen = ({ route }) => {
     declineFriendRequestSocket,
     cancelFriendRequestSocket,
     unfriendSocket,
+    blockUserSocket,
+    unblockUserSocket,
   } = useSocket();
   const [fullscreenMedia, setFullscreenMedia] = useState({
     visible: false,
@@ -86,7 +92,7 @@ const ChatMessageScreen = ({ route }) => {
   const flatListRef = useRef(null);
   const hasScrolledToTop = useRef(false);
   const typingTimeoutRef = useRef(null);
-  const { isFriend, isSentRequest, isReceiveRequest } = useSelector(
+  const { isFriend, isSentRequest, isReceiveRequest, isBlocked, isBlockedUser } = useSelector(
     state => state.friend,
   );
 
@@ -102,6 +108,8 @@ const ChatMessageScreen = ({ route }) => {
     dispatch(checkFriendShip({ friendId: restUser._id }));
     dispatch(checkSendRequest({ friendId: restUser._id }));
     dispatch(checkReceiveRequest({ friendId: restUser._id }));
+    dispatch(checkBlockedUser({ userId: restUser._id }));
+    dispatch(checkIsBlockedUser({ userId: restUser._id }));
   };
 
   useEffect(() => {
@@ -124,6 +132,17 @@ const ChatMessageScreen = ({ route }) => {
 
     socket.on('receive_friend_request', () => {
       dispatch(checkReceiveRequest({ friendId: restUser._id }));
+    });
+
+    socket.on('receive_user_blocked', () => {
+      dispatch(checkBlockedUser({ userId: restUser._id }));
+      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+      dispatch(checkFriendShip({ friendId: restUser._id }));
+    });
+
+    socket.on('user_unblocked', () => {
+      dispatch(checkBlockedUser({ userId: restUser._id }));
+      dispatch(checkIsBlockedUser({ userId: restUser._id }));
     });
 
     socket.on('friend_request_accepted', () => {
@@ -151,6 +170,7 @@ const ChatMessageScreen = ({ route }) => {
 
     return () => {
       socket.off('receive_friend_request');
+      socket.off('receive_user_blocked');
       socket.off('friend_request_accepted');
       socket.off('friend_request_accepted_success');
       socket.off('friend_request_declined');
@@ -166,6 +186,29 @@ const ChatMessageScreen = ({ route }) => {
       dispatch(checkSendRequest({ friendId: restUser._id }));
     } catch (error) {
       console.error('Send friend request failed:', error);
+    }
+  };
+
+  const handleBlockUser = async () => {
+    try {
+      await dispatch(blockUser({ userId: restUser._id }));
+      blockUserSocket(restUser._id);
+      dispatch(checkBlockedUser({ userId: restUser._id }));
+      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+    } catch (error) {
+      console.error('Block user failed:', error);
+    }
+  };
+
+  const handleUnblockUser = async () => {
+    try {
+      await dispatch(unblockUser({ userId: restUser._id }));
+      blockUserSocket(restUser._id,'unblock');
+        
+      dispatch(checkBlockedUser({ userId: restUser._id }));
+      dispatch(checkIsBlockedUser({ userId: restUser._id }));
+    } catch (error) {
+      console.error('Unblock user failed:', error);
     }
   };
 
@@ -470,35 +513,62 @@ const ChatMessageScreen = ({ route }) => {
         restUser={restUser}
       />
 
-      <View className="bg-gray-100 py-2 flex-row justify-center">
+      {currentConversation.conversation_type !== 'group' && (
+        <View className="bg-gray-100 py-2 flex-row justify-center">
         <View className="flex-row items-center">
-          <Icon name="user-plus" size={16} color="#666" />
+          
+          {isBlockedUser ?  (
+            <>
+              <Icon name="lock-open" size={16} color="#666" />
+              <TouchableOpacity
+                onPress={handleUnblockUser}
+                className="flex-row items-center ml-2"
+              >
+                <Text className="text-gray-700 text-sm ml-1">Bỏ chặn</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View className="flex-row items-center">
+                <Icon name="user-plus" size={16} color="#666" />
+                <TouchableOpacity
+                  onPress={
+                    isFriend
+                      ? handleUnfriend
+                      : isSentRequest
+                      ? handleCancelFriendRequest
+                      : isReceiveRequest
+                      ? handleAcceptFriendRequest
+                      : handleSendFriendRequest
+                  }
+                  className="flex-row items-center ml-2"
+                >
+                  {isFriend ? (
+                    <Text className="text-gray-700 text-sm ml-1">Xóa kết bạn</Text>
+                  ) : isSentRequest ? (
+                    <Text className="text-gray-700 text-sm ml-1">Hủy yêu cầu</Text>
+                  ) : isReceiveRequest ? (
+                    <Text className="text-gray-700 text-sm ml-1">Đồng ý kết bạn</Text>
+                  ) : (
+                    <Text className="text-gray-700 text-sm ml-1">Gửi yêu cầu kết bạn</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
 
-          <TouchableOpacity
-            onPress={
-              isFriend
-                ? handleUnfriend
-                : isSentRequest
-                ? handleCancelFriendRequest
-                : isReceiveRequest
-                ? handleAcceptFriendRequest
-                : handleSendFriendRequest
-            }
-            className="flex-row items-center ml-2">
-            {isFriend ? (
-              <Text className="text-gray-700 text-sm ml-1">Xóa kết bạn</Text>
-            ) : isSentRequest ? (
-              <Text className="text-gray-700 text-sm ml-1">Hủy yêu cầu</Text>
-            ) : isReceiveRequest ? (
-              <Text className="text-gray-700 text-sm ml-1">Đồng ý kết bạn</Text>
-            ) : (
-              <Text className="text-gray-700 text-sm ml-1">
-                Gửi yêu cầu kết bạn
-              </Text>
-            )}
-          </TouchableOpacity>
+              <View className="flex-row items-center ml-4">
+                <Icon name="lock" size={16} color="#666" />
+                <TouchableOpacity
+                  onPress={handleBlockUser}
+                  className="flex-row items-center ml-2"
+                >
+                  <Text className="text-gray-700 text-sm ml-1">Chặn</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </View>
+      )}
 
       <MessageList
         flatListRef={flatListRef}
@@ -527,6 +597,8 @@ const ChatMessageScreen = ({ route }) => {
         onPickFile={handlePickFile}
         conversation={currentConversation}
         authUser={user}
+        isBlocked={isBlocked}
+        isBlockedUser={isBlockedUser}
       />
       <FullscreenMediaViewer
         visible={fullscreenMedia.visible}

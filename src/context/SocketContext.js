@@ -15,6 +15,7 @@ import {
   declineFriendRequest,
   cancelFriendRequest,
   unfriendUser,
+
 } from '../redux/slices/friendSlice';
 import {markAsReadMessage} from '../redux/thunks/chatThunks';
 import {navigate} from '../component/NavigationService';
@@ -108,6 +109,11 @@ export const SocketProvider = ({children, userId, token}) => {
         dispatch(receiveFriendRequest(data));
       });
 
+      newSocket.on('receive_user_blocked', data => {
+        console.log('🚫 Nhận thông báo người dùng bị chặn:', data);
+        dispatch(receiveFriendRequest(data));
+      });
+
       newSocket.on('friend_request_accepted', data => {
         console.log('✅ Lời mời kết bạn được chấp nhận:', data);
         dispatch(acceptFriendRequest(data));
@@ -126,6 +132,11 @@ export const SocketProvider = ({children, userId, token}) => {
       newSocket.on('friend_request_canceled', data => {
         console.log('🗑️ Lời mời kết bạn bị hủy:', data);
         dispatch(cancelFriendRequest(data));
+      });
+
+      newSocket.on('user_blocked', data => {
+        console.log('🚫 Người dùng đã bị chặn:', data)
+        dispatch(receiveFriendRequest(data));
       });
 
       newSocket.on('user_unfriended', data => {
@@ -264,6 +275,25 @@ export const SocketProvider = ({children, userId, token}) => {
     }
   };
 
+  const blockUserSocket = (
+    toUserId,
+    message = 'Bạn đã chặn người dùng này.',
+  ) => {
+    if (socket && isConnected) {
+      socket.emit('user_blocked', {
+        fromUserId: userId,
+        toUserId,
+        message,
+      });
+    }
+  }
+
+  const unblockUserSocket = toUserId => {
+    if (socket && isConnected) {
+      socket.emit('user_unblocked', {fromUserId: userId, toUserId});
+    }
+  };
+
   const acceptFriendRequestSocket = toUserId => {
     if (socket && isConnected) {
       socket.emit('friend_request_accepted', {fromUserId: userId, toUserId});
@@ -312,6 +342,8 @@ export const SocketProvider = ({children, userId, token}) => {
         declineFriendRequestSocket,
         cancelFriendRequestSocket,
         unfriendSocket,
+        blockUserSocket,
+        unblockUserSocket
       }}>
       {children}
     </SocketContext.Provider>

@@ -230,6 +230,100 @@ export const getReceivedRequests = createAsyncThunk(
   },
 );
 
+export const blockUser = createAsyncThunk(
+  'blockUser',
+  async ({ userId }) => {
+    const clientId = await AsyncStorage.getItem('client_id');
+    const accessToken = await AsyncStorage.getItem('access_token');
+    if (!clientId || !accessToken) {
+      throw new Error('Please log in again.');
+    }
+    const res = await axios.post(
+      `/user/block-user/${userId}`,
+      {},
+      {
+        headers: {
+          'x-client-id': clientId,
+          authorization: accessToken,
+        },
+      },
+    );
+    return {
+      message: res.data.metadata.message,
+      status: res.data.statusCode,
+    };
+  },
+);
+
+export const unblockUser = createAsyncThunk(
+  'unblockUser',
+  async ({ userId }) => {
+    const clientId = await AsyncStorage.getItem('client_id');
+    const accessToken = await AsyncStorage.getItem('access_token');
+    if (!clientId || !accessToken) {
+      throw new Error('Please log in again.');
+    }
+    const res = await axios.post(
+      `/user/unblock-user/${userId}`,
+      {},
+      {
+        headers: {
+          'x-client-id': clientId,        },
+      },
+    );
+    return {
+      message: res.data.metadata.message,
+      status: res.data.statusCode,
+    };
+  },
+);
+
+
+export const checkBlockedUser = createAsyncThunk(
+  'checkBlockedUser',
+  async ({ userId }) => {
+  const clientId = await AsyncStorage.getItem('client_id');
+  const accessToken = await AsyncStorage.getItem('access_token');
+  if (!clientId || !accessToken) {
+    throw new Error('Please log in again.');
+  }
+  const res = await axios.get(`/user/check-blocked-user/${userId}`, {
+    headers: {
+      'x-client-id': clientId,
+      authorization: accessToken,
+    },
+  });
+  return {
+    isBlockedUser: res.data.metadata.isBlockedUser,
+    message: res.data.metadata.message,
+  };
+});
+
+
+export const checkIsBlockedUser = createAsyncThunk(
+  'checkIsBlockedUser',
+  async ({ userId }) => {
+  const clientId = await AsyncStorage.getItem('client_id');
+  const accessToken = await AsyncStorage.getItem('access_token');
+  if (!clientId || !accessToken) {
+    throw new Error('Please log in again.');
+  }
+  const res = await axios.get(`/user/check-is-blocked/${userId}`, {
+    headers: {
+      'x-client-id': clientId,
+      authorization: accessToken,
+    },
+  });
+  return {
+    isBlocked: res.data.metadata.isBlocked,
+    message: res.data.metadata.message,
+  };
+});
+
+
+
+
+
 const friendSlice = createSlice({
   name: 'friend',
   initialState: {
@@ -242,6 +336,8 @@ const friendSlice = createSlice({
     friendList: [],
     sentRequests: [],
     receivedRequests: [],
+    isBlockedUser:null,
+    isBlocked:null
   },
   reducers: {
     resetError(state) {
@@ -396,7 +492,61 @@ const friendSlice = createSlice({
       .addCase(getReceivedRequests.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(blockUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(blockUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message;
+        state.isBlockedUser = true;
+        state.isFriend = false;
+      })
+      .addCase(blockUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkBlockedUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkBlockedUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isBlockedUser = action.payload.isBlockedUser;
+        state.message = action.payload.message;
+      })
+      .addCase(checkBlockedUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkIsBlockedUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkIsBlockedUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isBlocked = action.payload.isBlocked;
+        state.message = action.payload.message;
+      })
+      .addCase(checkIsBlockedUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(unblockUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unblockUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message;
+        state.isBlockedUser = false;
+      })
+      .addCase(unblockUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
   },
 });
 
